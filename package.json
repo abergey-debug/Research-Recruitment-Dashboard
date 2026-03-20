@@ -1,0 +1,16 @@
+{
+  "name": "preventable-recruitment-dashboard",
+  "version": "1.0.0",
+  "description": "PREVENTABLE Study Recruitment Dashboard",
+  "main": "main.js",
+  "scripts": {
+    "start": "ELECTRON_RUN_AS_NODE= electron .",
+    "build": "electron-packager . 'PREVENTABLE Dashboard' --platform=darwin --arch=arm64 --out=dist --overwrite --ignore='dist|\\.git|Launch Dashboard\\.command'"
+  },
+  "dependencies": {
+    "electron": "^25.9.8"
+  },
+  "devDependencies": {
+    "electron-packager": "^17.1.2"
+  }
+}

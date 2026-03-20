@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PREVENTABLE Recruitment Dashboard — Emory</title>
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      background: #e8edf4;
+      color: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: #012169;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-shrink: 0;
+      height: 64px;
+      -webkit-app-region: drag;
+      box-shadow: 0 2px 8px rgba(1,33,105,0.4);
+      position: relative;
+    }
+
+    /* Emory logo mark — flame/torch SVG inline */
+    .emory-mark {
+      display: flex;
+      align-items: center;
+      margin-right: 18px;
+      flex-shrink: 0;
+    }
+    .emory-mark img {
+      height: 54px;
+      width: auto;
+      /* logo is dark — invert to white for the navy bar */
+      filter: brightness(0) invert(1);
+      display: block;
+    }
+
+    /* Gold divider */
+    .topbar-divider {
+      width: 2px;
+      height: 28px;
+      background: #f2a900;
+      margin: 0 18px;
+      border-radius: 1px;
+      flex-shrink: 0;
+    }
+
+    .app-title {
+      display: flex;
+      flex-direction: column;
+    }
+    .app-title .study {
+      font-size: 9px;
+      font-weight: 600;
+      color: rgba(242,169,0,0.85);
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+    }
+    .app-title .label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    /* Medical cross badge */
+    .med-badge {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-app-region: no-drag;
+    }
+
+    .folder-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(242,169,0,0.15);
+      border: 1.5px solid rgba(242,169,0,0.4);
+      border-radius: 7px;
+      color: #f2a900;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 11px;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: background 0.12s, border-color 0.12s;
+      -webkit-app-region: no-drag;
+      white-space: nowrap;
+    }
+    .folder-btn:hover { background: rgba(242,169,0,0.28); border-color: #f2a900; }
+    .folder-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .med-cross {
+      width: 22px;
+      height: 22px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .med-cross::before,
+    .med-cross::after {
+      content: '';
+      position: absolute;
+      background: rgba(242,169,0,0.7);
+      border-radius: 2px;
+    }
+    .med-cross::before { width: 100%; height: 36%; top: 32%; left: 0; }
+    .med-cross::after  { width: 36%; height: 100%; top: 0; left: 32%; }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 6px #4ade80;
+    }
+    .status-text {
+      font-size: 10px;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Protected banner ── */
+    .protected-banner {
+      background: #8b0000;
+      color: #ffffff;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 0;
+      flex-shrink: 0;
+      border-bottom: 2px solid #6a0000;
+      box-shadow: 0 1px 4px rgba(139,0,0,0.4);
+    }
+
+    /* ── Gold accent bar ── */
+    .gold-bar {
+      height: 3px;
+      background: linear-gradient(90deg, #f2a900 0%, #d4930a 60%, #012169 100%);
+      flex-shrink: 0;
+    }
+
+    /* ── Dashboard ── */
+    .dashboard {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      gap: 0;
+    }
+
+    /* ── Panel base ── */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 180px;
+      position: relative;
+      background: #ffffff;
+    }
+
+    /* Panel header */
+    .panel-header {
+      background: #f0f4fa;
+      border-bottom: 2px solid #012169;
+      display: flex;
+      align-items: stretch;
+      flex-shrink: 0;
+      height: 38px;
+    }
+
+    .panel-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #012169;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      border-right: 1px solid #d0daea;
+      white-space: nowrap;
+      flex-shrink: 0;
+      background: #012169;
+      color: #ffffff;
+      min-width: 0;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex: 1;
+      background: #f0f4fa;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      padding: 0 13px;
+      font-size: 11.5px;
+      cursor: pointer;
+      white-space: nowrap;
+      color: #5a6a8a;
+      border-right: 1px solid #dce6f0;
+      border-bottom: 3px solid transparent;
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 6px;
+    }
+    .tab:hover { background: #e2eaf5; color: #012169; }
+    .tab.active {
+      background: #ffffff;
+      color: #012169;
+      font-weight: 600;
+      border-bottom: 3px solid #f2a900;
+    }
+    .tab .folder-badge {
+      font-size: 9px;
+      background: #012169;
+      color: #f2a900;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    /* Panel separators */
+    #pdf-panel      { flex: 0 0 42%; border-right: 3px solid #012169; }
+    #onedrive-panel { flex: 1;       border-right: 3px solid #012169; }
+
+    /* Right column — stacks patient info on top, Google Voice below */
+    #right-column {
+      flex: 0 0 24%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 180px;
+    }
+
+    /* ── Patient Info panel ── */
+    #patient-panel {
+      flex: 0 0 50%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-bottom: 3px solid #012169;
+      position: relative;
+    }
+    #patient-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+      background: #f8fafd;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Idle state (before paste) ── */
+    #patient-idle {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      text-align: center;
+    }
+    .idle-icon {
+      width: 48px; height: 48px;
+      background: #e8edf4;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .idle-icon svg { width: 22px; height: 22px; color: #9aaccb; }
+    .empty-info {
+      color: #9aaccb;
+      font-size: 12px;
+      line-height: 1.7;
+      max-width: 180px;
+    }
+
+    /* ── Patient card (results) ── */
+    #patient-results {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      text-align: center;
+    }
+
+    /* Avatar circle with initials */
+    .patient-avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: #012169;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      flex-shrink: 0;
+    }
+    .patient-avatar-initials {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f2a900;
+      letter-spacing: 1px;
+    }
+
+    .patient-field-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      color: #9aaccb;
+      margin-bottom: 4px;
+    }
+    .patient-name-val {
+      font-size: 17px;
+      font-weight: 700;
+      color: #012169;
+      line-height: 1.25;
+      margin-bottom: 24px;
+      word-break: break-word;
+    }
+
+    /* Big call button */
+    .phone-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: #012169;
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 20px;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.12s, transform 0.08s;
+      margin-bottom: 10px;
+    }
+    .phone-btn:hover  { background: #023099; }
+    .phone-btn:active { transform: scale(0.97); }
+    .phone-btn-icon {
+      width: 28px; height: 28px;
+      background: rgba(242,169,0,0.18);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px;
+    }
+    .phone-btn-icon svg { width: 14px; height: 14px; }
+    .phone-btn .phone-num {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .phone-btn .call-label {
+      font-size: 9px;
+      color: #f2a900;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .no-phone {
+      color: #b0bece;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    /* Email button — mirrors phone-btn with green accent */
+    .email-btn {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: #1a5e1a;
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 10px;
+      cursor: pointer;
+      transition: background 0.12s, transform 0.08s;
+      min-width: 0;
+    }
+    .email-btn:hover  { background: #236b23; }
+    .email-btn:active { transform: scale(0.97); }
+    .email-btn-icon {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px;
+    }
+    .email-btn-icon svg { width: 14px; height: 14px; }
+    .email-btn .email-label {
+      font-size: 9px;
+      color: #a8e6a8;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .email-btn .email-sublabel {
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Paste button */
+    .scan-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      background: #fff;
+      border: 1.5px solid #d0daea;
+      border-radius: 8px;
+      color: #5a6a8a;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 9px 14px;
+      transition: background 0.12s, border-color 0.12s;
+      width: 100%;
+      letter-spacing: 0.3px;
+      margin-top: 6px;
+    }
+    .scan-btn:hover { background: #f0f4fa; border-color: #012169; color: #012169; }
+    .scan-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    #patient-panel .spinner-ring {
+      width: 24px; height: 24px;
+      border-width: 2.5px;
+      margin: auto;
+    }
+
+    /* Horizontal resize handle between patient info and Google Voice */
+    .resize-handle-h {
+      height: 6px;
+      cursor: row-resize;
+      background: transparent;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 30;
+      transition: background 0.15s;
+    }
+    .resize-handle-h:hover,
+    .resize-handle-h.dragging { background: rgba(242,169,0,0.5); }
+
+    /* Google Voice sub-panel */
+    #voice-subpanel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 120px;
+    }
+
+    /* PDF embed */
+    #pdf-embed-container {
+      flex: 1;
+      overflow: hidden;
+      background: #f5f7fa;
+      position: relative;
+      min-height: 0;
+    }
+    #pdf-embed {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Webview container */
+    .webview-container {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+    webview {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+    }
+
+    /* Loading overlay */
+    .loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafd;
+      color: #7a8fa6;
+      font-size: 12px;
+      gap: 14px;
+      z-index: 10;
+    }
+    .loading .load-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #012169;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .loading .load-icon::before,
+    .loading .load-icon::after {
+      content: '';
+      position: absolute;
+      background: #f2a900;
+      border-radius: 2px;
+    }
+    .loading .load-icon::before { width: 60%; height: 20%; }
+    .loading .load-icon::after  { width: 20%; height: 60%; }
+
+    .spinner-ring {
+      width: 42px; height: 42px;
+      border: 3px solid #dce6f0;
+      border-top-color: #012169;
+      border-right-color: #f2a900;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading .site-name {
+      font-size: 13px;
+      color: #012169;
+      font-weight: 600;
+    }
+    .loading .sub {
+      font-size: 11px;
+      color: #9aaccb;
+    }
+
+    /* Back button — shared across all panels */
+    .back-btn {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      background: #e8f0fe;
+      border: none;
+      border-right: 1px solid #d0daea;
+      color: #012169;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 0 12px;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: background 0.12s;
+      flex-shrink: 0;
+    }
+    .back-btn:hover { background: #d0e1fb; }
+    .back-btn svg { width: 12px; height: 12px; }
+
+    /* Zoom controls */
+    .zoom-controls {
+      display: flex;
+      align-items: stretch;
+      border-left: 1px solid #d0daea;
+      flex-shrink: 0;
+    }
+    .zoom-btn {
+      width: 28px;
+      background: transparent;
+      border: none;
+      border-right: 1px solid #d0daea;
+      color: #5a6a8a;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+      transition: background 0.12s, color 0.12s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .zoom-btn:hover { background: #e2eaf5; color: #012169; }
+    .zoom-btn:last-child { border-right: none; }
+    .zoom-pct {
+      font-size: 9px;
+      font-weight: 700;
+      color: #9aaccb;
+      padding: 0 5px;
+      display: flex;
+      align-items: center;
+      min-width: 30px;
+      justify-content: center;
+      border-right: 1px solid #d0daea;
+    }
+
+    /* Refresh button */
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      background: transparent;
+      border: none;
+      border-left: 1px solid #d0daea;
+      color: #5a6a8a;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.12s, color 0.12s;
+    }
+    .refresh-btn:hover { background: #e2eaf5; color: #012169; }
+    .refresh-btn svg {
+      width: 13px;
+      height: 13px;
+      transition: transform 0.4s ease;
+    }
+    .refresh-btn:active svg { transform: rotate(360deg); }
+
+    /* Patient navigator */
+    .patient-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f0f4fa;
+      border-top: 1px solid #dce6f0;
+      padding: 6px 10px;
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      width: 28px; height: 28px;
+      border-radius: 5px;
+      border: 1.5px solid #d0daea;
+      background: #fff;
+      color: #012169;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .nav-btn:hover:not(:disabled) { background: #e2eaf5; }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .nav-btn svg { width: 11px; height: 11px; }
+    .nav-counter {
+      font-size: 11px;
+      font-weight: 700;
+      color: #5a6a8a;
+      letter-spacing: 0.3px;
+    }
+
+    /* Resize handle */
+    .resize-handle {
+      width: 6px;
+      cursor: col-resize;
+      position: absolute;
+      top: 0;
+      right: -3px;
+      bottom: 0;
+      z-index: 30;
+      background: transparent;
+      transition: background 0.15s;
+    }
+    .resize-handle:hover,
+    .resize-handle.dragging { background: rgba(242,169,0,0.5); }
+  </style>
+</head>
+<body>
+
+  <!-- ── Top bar ── -->
+  <div class="topbar">
+    <div class="emory-mark">
+      <img src="emory-logo.png" alt="Emory University" />
+    </div>
+
+    <div class="topbar-divider"></div>
+
+    <div class="app-title">
+      <span class="study">PREVENTABLE Trial</span>
+      <span class="label">Recruitment Dashboard</span>
+    </div>
+
+    <div class="med-badge">
+      <button class="folder-btn" id="open-folder-btn" title="Open PREVENTABLE folder in Finder">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h3.586a1 1 0 0 1 .707.293L7.5 3.5H13A1.5 1.5 0 0 1 14.5 5v7A1.5 1.5 0 0 1 13 13.5H2.5A1.5 1.5 0 0 1 1 12V3.5z"/>
+        </svg>
+        Open Folder
+      </button>
+      <div class="med-cross"></div>
+      <div class="status-dot"></div>
+      <span class="status-text">Active Session</span>
+    </div>
+  </div>
+  <div class="gold-bar"></div>
+  <div class="protected-banner">
+    &#9632;&nbsp;&nbsp;PROTECTED HEALTH INFORMATION &nbsp;|&nbsp; AUTHORIZED PERSONNEL ONLY &nbsp;|&nbsp; HIPAA RESTRICTED&nbsp;&nbsp;&#9632;
+  </div>
+
+  <!-- ── Dashboard ── -->
+  <div class="dashboard">
+
+    <!-- LEFT: PDF Viewer with tabs -->
+    <div class="panel" id="pdf-panel">
+      <div class="panel-header">
+        <span class="panel-label">Scripts &amp; Docs</span>
+        <button class="back-btn" id="pdf-back" title="Go back">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 2L4 6l4 4"/>
+          </svg>
+          Back
+        </button>
+        <div class="tabs" id="pdf-tabs"></div>
+        <div class="zoom-controls">
+          <button class="zoom-btn" id="zoom-pdf-out" title="Zoom out">−</button>
+          <span class="zoom-pct" id="zoom-pdf-pct">100%</span>
+          <button class="zoom-btn" id="zoom-pdf-in"  title="Zoom in">+</button>
+        </div>
+        <button class="refresh-btn" id="refresh-pdf" title="Reload PDF">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13.5 8A5.5 5.5 0 1 1 10 3.07"/>
+            <polyline points="10 1 10 4 13 4"/>
+          </svg>
+        </button>
+      </div>
+      <div id="pdf-embed-container">
+        <div class="loading" id="pdf-loading">
+          <div class="spinner-ring"></div>
+          <span class="site-name">Loading files…</span>
+        </div>
+        <iframe id="pdf-embed" src="" style="display:none;"></iframe>
+      </div>
+      <div class="resize-handle" id="resize-pdf"></div>
+    </div>
+
+    <!-- MIDDLE: OneDrive / Excel Online -->
+    <div class="panel" id="onedrive-panel">
+      <div class="panel-header">
+        <span class="panel-label">OneDrive</span>
+        <button class="back-btn" id="onedrive-back" title="Go back">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 2L4 6l4 4"/>
+          </svg>
+          Back
+        </button>
+        <div class="zoom-controls">
+          <button class="zoom-btn" id="zoom-od-out" title="Zoom out">−</button>
+          <span class="zoom-pct" id="zoom-od-pct">100%</span>
+          <button class="zoom-btn" id="zoom-od-in"  title="Zoom in">+</button>
+        </div>
+        <button class="refresh-btn" id="refresh-onedrive" title="Reload OneDrive">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13.5 8A5.5 5.5 0 1 1 10 3.07"/>
+            <polyline points="10 1 10 4 13 4"/>
+          </svg>
+        </button>
+      </div>
+      <div class="webview-container">
+        <div class="loading" id="onedrive-loading">
+          <div class="spinner-ring"></div>
+          <span class="site-name">OneDrive</span>
+          <span class="sub">Connecting…</span>
+        </div>
+        <webview id="onedrive-view"
+          src="https://emory-my.sharepoint.com/"
+          partition="persist:recruitment"
+          allowpopups
+          useragent="Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15">
+        </webview>
+      </div>
+      <div class="resize-handle" id="resize-onedrive"></div>
+    </div>
+
+    <!-- RIGHT COLUMN: Patient Info (top) + Google Voice (bottom) -->
+    <div id="right-column">
+
+      <!-- Patient Info panel -->
+      <div id="patient-panel">
+        <div class="panel-header">
+          <span class="panel-label">Patient Info</span>
+          <button class="refresh-btn" id="refresh-scan" title="Scan screen">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="4" height="4" rx="0.5"/>
+              <rect x="10" y="2" width="4" height="4" rx="0.5"/>
+              <rect x="2" y="10" width="4" height="4" rx="0.5"/>
+              <path d="M10 10h2v2m0 2h2m-2-2v2"/>
+            </svg>
+          </button>
+        </div>
+        <div id="patient-body">
+          <div id="patient-idle">
+            <div class="idle-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <p class="empty-info">Select rows in Excel and press <strong>Ctrl+C</strong>, then paste here.</p>
+            <button class="scan-btn" id="scan-btn">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="9" height="11" rx="1"/>
+                <path d="M3 4H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-1"/>
+              </svg>
+              Paste from Excel
+            </button>
+          </div>
+
+          <div id="patient-loading" style="display:none;">
+            <div class="spinner-ring"></div>
+          </div>
+          <div id="patient-results" style="display:none;">
+            <div class="patient-avatar">
+              <span class="patient-avatar-initials" id="patient-avatar-initials">?</span>
+            </div>
+            <div class="patient-field-label">Patient Name</div>
+            <div class="patient-name-val" id="patient-name">—</div>
+            <div class="patient-field-label">Cell Phone</div>
+            <div id="phone-list" style="width:100%;"></div>
+            <div id="email-list" style="width:100%;margin-top:8px;"></div>
+            <button class="scan-btn" id="scan-again-btn">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="9" height="11" rx="1"/>
+                <path d="M3 4H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-1"/>
+              </svg>
+              Paste from Excel
+            </button>
+          </div>
+        </div>
+
+        <!-- Patient navigator bar -->
+        <div class="patient-nav" id="patient-nav" style="display:none;">
+          <button class="nav-btn" id="nav-prev" title="Previous patient">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M8 2L4 6l4 4"/>
+            </svg>
+          </button>
+          <span class="nav-counter" id="nav-counter">1 / 1</span>
+          <button class="nav-btn" id="nav-next" title="Next patient">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M4 2l4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Horizontal drag handle -->
+      <div class="resize-handle-h" id="resize-h"></div>
+
+      <!-- Google Voice sub-panel -->
+      <div id="voice-subpanel">
+        <div class="panel-header">
+          <span class="panel-label">Google Voice</span>
+          <button class="back-btn" id="voice-back" title="Go back">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 2L4 6l4 4"/>
+            </svg>
+            Back
+          </button>
+          <div class="zoom-controls">
+            <button class="zoom-btn" id="zoom-v-out" title="Zoom out">−</button>
+            <span class="zoom-pct" id="zoom-v-pct">100%</span>
+            <button class="zoom-btn" id="zoom-v-in"  title="Zoom in">+</button>
+          </div>
+          <button class="refresh-btn" id="refresh-voice" title="Reload Google Voice">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13.5 8A5.5 5.5 0 1 1 10 3.07"/>
+              <polyline points="10 1 10 4 13 4"/>
+            </svg>
+          </button>
+        </div>
+        <div class="webview-container">
+          <div class="loading" id="voice-loading">
+            <div class="spinner-ring"></div>
+            <span class="site-name">Google Voice</span>
+            <span class="sub">Connecting…</span>
+          </div>
+          <webview id="voice-view"
+            src="https://voice.google.com"
+            partition="persist:recruitment"
+            allowpopups
+            useragent="Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15">
+          </webview>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // ── PDF Tabs ───────────────────────────────────────────────────
+    const tabsEl    = document.getElementById('pdf-tabs');
+    const pdfEmbed  = document.getElementById('pdf-embed');
+    const pdfLoad   = document.getElementById('pdf-loading');
+    const pdfBack   = document.getElementById('pdf-back');
+    const pdfHistory = []; // stack of {file, tabEl}
+
+    async function loadPDFTabs() {
+      const files = await window.api.getPDFFiles();
+      if (!files || !files.length) {
+        pdfLoad.querySelector('.site-name').textContent = 'No PDFs found.';
+        return;
+      }
+      files.forEach((file, i) => {
+        const tab = document.createElement('div');
+        tab.className = 'tab' + (i === 0 ? ' active' : '');
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = file.name;
+
+        const badge = document.createElement('span');
+        badge.className = 'folder-badge';
+        badge.textContent = file.folder === 'PREVENTABLE RECRUITMENT' ? 'RCT' : 'Study';
+
+        tab.appendChild(nameSpan);
+        tab.appendChild(badge);
+        tab.title = file.path;
+        tab._fileRef = file;
+        tab.addEventListener('click', () => selectPDF(file, tab));
+        tabsEl.appendChild(tab);
+        if (i === 0) selectPDF(file, tab);
+      });
+    }
+
+    async function selectPDF(file, tabEl, skipHistory) {
+      // Track history for back button
+      const current = document.querySelector('.tab.active');
+      if (current && !skipHistory) {
+        const currentFile = current._fileRef;
+        if (currentFile) pdfHistory.push({ file: currentFile, tabEl: current });
+        pdfBack.style.display = pdfHistory.length ? 'flex' : 'none';
+      }
+
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tabEl.classList.add('active');
+      pdfEmbed.style.display = 'none';
+      pdfLoad.style.display = 'flex';
+      pdfLoad.querySelector('.site-name').textContent = 'Loading…';
+
+      const b64 = await window.api.getPDFData(file.path);
+      if (!b64) { pdfLoad.querySelector('.site-name').textContent = 'Could not load file.'; return; }
+
+      pdfEmbed.src = 'data:application/pdf;base64,' + b64;
+      pdfEmbed.style.display = 'block';
+      pdfLoad.style.display = 'none';
+    }
+
+    // ── Back buttons ──────────────────────────────────────────────
+    // PDF back
+    pdfBack.addEventListener('click', () => {
+      const prev = pdfHistory.pop();
+      if (prev) selectPDF(prev.file, prev.tabEl, true);
+      pdfBack.style.display = pdfHistory.length ? 'flex' : 'none';
+    });
+
+    // ── Webview loading states ─────────────────────────────────────
+    function setupWebviewLoading(viewId, loadingId) {
+      const view    = document.getElementById(viewId);
+      const loading = document.getElementById(loadingId);
+      if (!view) return;
+      view.addEventListener('did-finish-load', () => { loading.style.display = 'none'; });
+      view.addEventListener('did-fail-load', (e) => {
+        if (e.errorCode === -3) return;
+        loading.querySelector('.sub').textContent = 'Check your connection.';
+        const ring = loading.querySelector('.spinner-ring');
+        if (ring) ring.style.display = 'none';
+      });
+    }
+    setupWebviewLoading('onedrive-view', 'onedrive-loading');
+    setupWebviewLoading('voice-view',    'voice-loading');
+
+    // ── OneDrive: open Excel/new-window links inside webview ───────
+    const onedriveView = document.getElementById('onedrive-view');
+    const onedriveBack = document.getElementById('onedrive-back');
+
+    onedriveView.addEventListener('new-window', (e) => {
+      // Google Voice links from OneDrive → open in the Voice panel
+      if (e.url.includes('voice.google.com') || e.url.startsWith('tel:') || e.url.startsWith('sms:')) {
+        document.getElementById('voice-view').loadURL(
+          e.url.startsWith('tel:') || e.url.startsWith('sms:')
+            ? 'https://voice.google.com'
+            : e.url
+        );
+      } else {
+        // Everything else (Excel, SharePoint, etc.) opens inside this panel
+        onedriveView.loadURL(e.url);
+      }
+    });
+    onedriveView.addEventListener('did-navigate', () => {
+      onedriveBack.style.display = onedriveView.canGoBack() ? 'flex' : 'none';
+    });
+    onedriveBack.addEventListener('click', () => {
+      if (onedriveView.canGoBack()) onedriveView.goBack();
+    });
+
+    // ── Resize handles ─────────────────────────────────────────────
+    function makeResizable(handleId, panelId) {
+      const handle = document.getElementById(handleId);
+      if (!handle) return;
+      const panel  = document.getElementById(panelId);
+      let startX, startWidth;
+
+      handle.addEventListener('mousedown', (e) => {
+        startX = e.clientX;
+        startWidth = panel.getBoundingClientRect().width;
+        handle.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        document.body.style.pointerEvents = 'none';
+
+        const onMove = (e) => {
+          panel.style.flex = `0 0 ${Math.max(200, startWidth + (e.clientX - startX))}px`;
+        };
+        const onUp = () => {
+          handle.classList.remove('dragging');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+          document.body.style.pointerEvents = '';
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', onUp);
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+        e.preventDefault();
+      });
+    }
+    makeResizable('resize-pdf',      'pdf-panel');
+    makeResizable('resize-onedrive', 'onedrive-panel');
+
+    // ── Zoom controls ─────────────────────────────────────────────
+    function makeZoom(inId, outId, pctId, getTarget, applyZoom) {
+      let factor = 1.0;
+      const step = 0.1;
+      const min  = 0.3;
+      const max  = 3.0;
+
+      const update = () => {
+        document.getElementById(pctId).textContent = Math.round(factor * 100) + '%';
+        applyZoom(factor, getTarget());
+      };
+
+      document.getElementById(inId).addEventListener('click', () => {
+        factor = Math.min(max, parseFloat((factor + step).toFixed(1)));
+        update();
+      });
+      document.getElementById(outId).addEventListener('click', () => {
+        factor = Math.max(min, parseFloat((factor - step).toFixed(1)));
+        update();
+      });
+    }
+
+    // PDF iframe — use CSS zoom
+    makeZoom('zoom-pdf-in', 'zoom-pdf-out', 'zoom-pdf-pct',
+      () => document.getElementById('pdf-embed'),
+      (f, el) => { if (el) el.style.zoom = f; }
+    );
+
+    // OneDrive webview — use setZoomFactor
+    makeZoom('zoom-od-in', 'zoom-od-out', 'zoom-od-pct',
+      () => document.getElementById('onedrive-view'),
+      (f, el) => { if (el && el.setZoomFactor) el.setZoomFactor(f); }
+    );
+
+    // Google Voice webview — use setZoomFactor
+    makeZoom('zoom-v-in', 'zoom-v-out', 'zoom-v-pct',
+      () => document.getElementById('voice-view'),
+      (f, el) => { if (el && el.setZoomFactor) el.setZoomFactor(f); }
+    );
+
+    // ── Refresh buttons ───────────────────────────────────────────
+    document.getElementById('refresh-pdf').addEventListener('click', () => {
+      const activeTab = document.querySelector('.tab.active');
+      if (activeTab) activeTab.click();
+    });
+    document.getElementById('refresh-onedrive').addEventListener('click', () => {
+      document.getElementById('onedrive-view').reload();
+    });
+    document.getElementById('refresh-voice').addEventListener('click', () => {
+      document.getElementById('voice-view').reload();
+    });
+    // ── Patient info scanner ──────────────────────────────────────
+    const voiceView = document.getElementById('voice-view');
+    let currentPatients = [];
+    let currentPatientIdx = 0;
+
+    function getInitials(name) {
+      if (!name) return '?';
+      const parts = name.trim().split(/\s+/);
+      return (parts[0][0] + (parts[parts.length - 1][0] || '')).toUpperCase();
+    }
+
+    function showPatient(idx) {
+      const p = currentPatients[idx];
+      if (!p) return;
+
+      // Avatar initials
+      const avatarEl = document.getElementById('patient-avatar-initials');
+      if (avatarEl) avatarEl.textContent = getInitials(p.name);
+
+      document.getElementById('patient-name').textContent = p.name || '—';
+
+      const phoneList = document.getElementById('phone-list');
+      phoneList.innerHTML = '';
+      const emailList = document.getElementById('email-list');
+      emailList.innerHTML = '';
+
+      // Call button
+      if (p.phone && p.phone.match(/\d{3}/)) {
+        const btn = document.createElement('button');
+        btn.className = 'phone-btn';
+        btn.innerHTML = `
+          <div class="phone-btn-icon">
+            <svg viewBox="0 0 16 16" fill="white">
+              <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58L3.654 1.328z"/>
+            </svg>
+          </div>
+          <span class="phone-num">${formatPhone(p.phone)}</span>
+          <span class="call-label">Tap to call</span>
+        `;
+        btn.addEventListener('click', () => dialNumber(p.phone));
+        phoneList.appendChild(btn);
+      } else {
+        phoneList.innerHTML = '<div class="no-phone">No phone number on file</div>';
+      }
+
+      // Email button (always shown)
+      const emailBtn = document.createElement('button');
+      emailBtn.className = 'email-btn';
+      emailBtn.innerHTML = `
+        <div class="email-btn-icon">
+          <svg viewBox="0 0 16 16" fill="white">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114V5.383zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.731z"/>
+          </svg>
+        </div>
+        <span class="email-sublabel">Email Patient</span>
+        <span class="email-label">Tap to email</span>
+      `;
+      emailBtn.addEventListener('click', () => emailPatient(p));
+      emailList.appendChild(emailBtn);
+
+      document.getElementById('nav-counter').textContent = `${idx + 1} / ${currentPatients.length}`;
+      document.getElementById('nav-prev').disabled = idx === 0;
+      document.getElementById('nav-next').disabled = idx === currentPatients.length - 1;
+    }
+
+    document.getElementById('nav-prev').addEventListener('click', () => {
+      if (currentPatientIdx > 0) showPatient(--currentPatientIdx);
+    });
+    document.getElementById('nav-next').addEventListener('click', () => {
+      if (currentPatientIdx < currentPatients.length - 1) showPatient(++currentPatientIdx);
+    });
+
+    // Google Voice back button (wired here so voiceView is defined)
+    const voiceBack = document.getElementById('voice-back');
+    voiceView.addEventListener('did-navigate', () => {
+      voiceBack.style.display = voiceView.canGoBack() ? 'flex' : 'none';
+    });
+    voiceBack.addEventListener('click', () => {
+      if (voiceView.canGoBack()) voiceView.goBack();
+    });
+
+    // Proper quoted-TSV parser — handles Excel cells that contain newlines/tabs
+    function parseTSV(text) {
+      const rows = [];
+      let row = [], field = '', inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i], next = text[i + 1];
+        if (inQuotes) {
+          if (ch === '"' && next === '"') { field += '"'; i++; }   // escaped quote
+          else if (ch === '"')            { inQuotes = false; }     // end quote
+          else                            { field += ch; }
+        } else {
+          if      (ch === '"')  { inQuotes = true; }
+          else if (ch === '\t') { row.push(field); field = ''; }
+          else if (ch === '\r') { /* skip */ }
+          else if (ch === '\n') {
+            row.push(field); field = '';
+            rows.push(row);  row = [];
+          } else { field += ch; }
+        }
+      }
+      if (field !== '' || row.length > 0) { row.push(field); rows.push(row); }
+      return rows;
+    }
+
+    function parsePatientInfo(text) {
+      const rows = parseTSV(text);
+
+      // Find the header row with FULL NAME, CELL #, and EMAIL
+      let nameCol = -1, cellCol = -1, emailCol = -1, headerIdx = -1;
+      for (let i = 0; i < rows.length; i++) {
+        const upper = rows[i].map(c => c.trim().toUpperCase());
+        const ni = upper.findIndex(c => c === 'FULL NAME' || c === 'FULLNAME' || c === 'NAME');
+        const ci = upper.findIndex(c => c === 'CELL #' || c === 'CELL#' || c === 'CELL' || c.includes('CELL'));
+        const ei = upper.findIndex(c => c.includes('EMAIL') || c.includes('E-MAIL') || c.includes('MAIL'));
+        if (ni !== -1 || ci !== -1) {
+          nameCol = ni; cellCol = ci; emailCol = ei; headerIdx = i;
+          break;
+        }
+      }
+
+      const patients = [];
+      if (headerIdx !== -1) {
+        for (let r = headerIdx + 1; r < rows.length; r++) {
+          const row = rows[r];
+          if (row.every(c => !c.trim())) continue; // skip blank rows
+
+          // Take only the FIRST LINE of the name cell (ignore notes below it)
+          const rawName  = nameCol >= 0 ? (row[nameCol] || '') : '';
+          const name     = rawName.split('\n')[0].trim() || null;
+          const phone    = cellCol >= 0 ? (row[cellCol] || '').trim() : null;
+          const email    = emailCol >= 0 ? (row[emailCol] || '').trim() : null;
+
+          if (name || phone) patients.push({ name, phone: phone || null, email: email || null });
+        }
+      }
+
+      return { patients };
+    }
+
+    function formatPhone(raw) {
+      const digits = raw.replace(/\D/g, '').replace(/^1/, '');
+      if (digits.length === 10) {
+        return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+      }
+      return raw;
+    }
+
+    function dialNumber(raw) {
+      const digits = raw.replace(/\D/g, '');
+      const e164 = digits.length === 10 ? `+1${digits}` : `+${digits}`;
+      // Navigate Google Voice to the call screen for this number
+      voiceView.loadURL(`https://voice.google.com/u/0/calls?a=nc,${encodeURIComponent(e164)}`);
+    }
+
+    async function emailPatient(p) {
+      const to = (p.email || '').trim();
+      const result = await window.api.sendEmail({ to, name: p.name || '' });
+      if (result && result.error) {
+        alert(`Could not open Mail: ${result.error}`);
+      }
+    }
+
+    async function runScan() {
+      document.getElementById('patient-idle').style.display    = 'none';
+      document.getElementById('patient-results').style.display = 'none';
+      document.getElementById('patient-loading').style.display = 'flex';
+
+      const result = await window.api.scanOneDrive();
+
+      document.getElementById('patient-loading').style.display = 'none';
+
+      if (!result || result.error) {
+        document.getElementById('patient-idle').style.display = 'block';
+        document.querySelector('#patient-idle .empty-info').textContent =
+          (result && result.error) || 'Could not read the screen. Make sure OneDrive is loaded.';
+        return;
+      }
+
+      const { patients } = parsePatientInfo(result.text);
+
+      if (patients.length === 0) {
+        document.getElementById('patient-idle').style.display = 'block';
+        document.querySelector('#patient-idle .empty-info').textContent =
+          'No patient data found. Make sure FULL NAME and CELL # columns are included in your copy.';
+        return;
+      }
+
+      // Store patients and show first one
+      currentPatients = patients;
+      currentPatientIdx = 0;
+      showPatient(0);
+
+      document.getElementById('patient-results').style.display = 'flex';
+      document.getElementById('patient-nav').style.display = patients.length > 1 ? 'flex' : 'none';
+    }
+
+    document.getElementById('scan-btn').addEventListener('click', runScan);
+    document.getElementById('scan-again-btn').addEventListener('click', runScan);
+    document.getElementById('refresh-scan').addEventListener('click', runScan);
+
+    // ── Vertical resize (patient info ↕ Google Voice) ─────────────
+    const resizeH = document.getElementById('resize-h');
+    const patientPanel = document.getElementById('patient-panel');
+
+    resizeH.addEventListener('mousedown', (e) => {
+      const startY     = e.clientY;
+      const startH     = patientPanel.getBoundingClientRect().height;
+      resizeH.classList.add('dragging');
+      document.body.style.cursor     = 'row-resize';
+      document.body.style.userSelect = 'none';
+      document.body.style.pointerEvents = 'none';
+
+      const onMove = (e) => {
+        const newH = Math.max(120, startH + (e.clientY - startY));
+        patientPanel.style.flex = `0 0 ${newH}px`;
+      };
+      const onUp = () => {
+        resizeH.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.body.style.pointerEvents = '';
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+      e.preventDefault();
+    });
+
+    // ── Route new-window URLs into the correct panel ──────────────
+    window.api.onOpenInPanel((url) => {
+      if (url.includes('voice.google.com')) {
+        document.getElementById('voice-view').loadURL(url);
+      } else {
+        // Everything else (Excel, SharePoint pages, etc.) stays in OneDrive panel
+        document.getElementById('onedrive-view').loadURL(url);
+      }
+    });
+
+    // ── Auth popup handler ────────────────────────────────────────
+    // When an OAuth popup completes, main process signals us with the
+    // destination URL. We reload the appropriate webview to that URL.
+    window.api.onAuthComplete((url) => {
+      if (url.includes('voice.google.com')) {
+        document.getElementById('voice-view').loadURL(url);
+      } else if (url.includes('sharepoint.com') || url.includes('onedrive.live.com') || url.includes('microsoftonline')) {
+        document.getElementById('onedrive-view').loadURL(url);
+      }
+    });
+
+    // ── Open folder in Finder ─────────────────────────────────────
+    document.getElementById('open-folder-btn').addEventListener('click', () => {
+      window.api.openFolder();
+    });
+
+    // ── Init ───────────────────────────────────────────────────────
+    loadPDFTabs();
+  </script>
+</body>
+</html>

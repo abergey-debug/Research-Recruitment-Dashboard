@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, clipboard, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, clipboard, shell, dialog } = require('electron');
 const path = require('path');
 const fs   = require('fs');
 const os   = require('os');
@@ -29,6 +29,28 @@ function getPDFFiles() {
 let mainWin = null;
 const webviewContents = new Map();
 
+// ── Voicemail message (played into a call when it reaches voicemail) ──
+const VOICEMAIL_DIR = app.getPath('userData');
+const VOICEMAIL_MIME_BY_EXT = {
+  '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.m4a': 'audio/mp4',
+  '.aac': 'audio/aac', '.ogg': 'audio/ogg', '.webm': 'audio/webm', '.caf': 'audio/x-caf',
+};
+
+function findVoicemailFile() {
+  if (!fs.existsSync(VOICEMAIL_DIR)) return null;
+  const match = fs.readdirSync(VOICEMAIL_DIR).find(f => f.startsWith('voicemail-message.'));
+  return match ? path.join(VOICEMAIL_DIR, match) : null;
+}
+
+function readVoicemailMessage() {
+  const file = findVoicemailFile();
+  if (!file) return null;
+  const ext = path.extname(file).toLowerCase();
+  const mime = VOICEMAIL_MIME_BY_EXT[ext] || 'audio/mpeg';
+  const data = fs.readFileSync(file).toString('base64');
+  return { dataUrl: `data:${mime};base64,${data}`, fileName: path.basename(file) };
+}
+
 
 function createWindow() {
   mainWin = new BrowserWindow({
@@ -48,6 +70,12 @@ function createWindow() {
   mainWin.webContents.on('did-attach-webview', (event, wc) => {
     webviewContents.set(wc.id, wc);
     wc.on('destroyed', () => webviewContents.delete(wc.id));
+    // The Google Voice panel is hidden (display:none) by default now, and
+    // Chromium throttles JS timers in backgrounded/hidden pages to save
+    // resources — which can interfere with an active WebRTC call's own
+    // logic. Keep both webviews running at full priority regardless of
+    // visibility.
+    wc.setBackgroundThrottling(false);
     wc.setWindowOpenHandler(({ url }) => {
       mainWin.webContents.send('open-in-panel', url);
       return { action: 'deny' };
@@ -129,6 +157,28 @@ end tell`;
         else resolve({ success: true });
       });
     });
+  });
+
+  ipcMain.handle('get-voicemail-message', () => readVoicemailMessage());
+
+  ipcMain.handle('pick-voicemail-file', async () => {
+    const result = await dialog.showOpenDialog(mainWin, {
+      title: 'Choose Voicemail Message Audio File',
+      properties: ['openFile'],
+      filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'webm', 'caf'] }],
+    });
+    if (result.canceled || !result.filePaths.length) return null;
+
+    const src = result.filePaths[0];
+    const ext = path.extname(src).toLowerCase();
+
+    fs.mkdirSync(VOICEMAIL_DIR, { recursive: true });
+    fs.readdirSync(VOICEMAIL_DIR)
+      .filter(f => f.startsWith('voicemail-message.'))
+      .forEach(f => fs.unlinkSync(path.join(VOICEMAIL_DIR, f)));
+
+    fs.copyFileSync(src, path.join(VOICEMAIL_DIR, `voicemail-message${ext}`));
+    return readVoicemailMessage();
   });
 
   createWindow();

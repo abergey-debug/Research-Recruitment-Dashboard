@@ -301,13 +301,19 @@
       text-align: center;
     }
 
-    /* Avatar circle with initials */
+    /* Avatar circle with initials, flanked by prev/next patient buttons */
+    .patient-avatar-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
     .patient-avatar {
       width: 64px; height: 64px;
       border-radius: 50%;
       background: #012169;
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 14px;
       flex-shrink: 0;
     }
     .patient-avatar-initials {
@@ -315,6 +321,11 @@
       font-weight: 700;
       color: #f2a900;
       letter-spacing: 1px;
+    }
+    .avatar-nav-btn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
     .patient-field-label {
@@ -334,43 +345,43 @@
       word-break: break-word;
     }
 
-    /* Big call button */
+    /* Call button — compact */
     .phone-btn {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 8px;
       background: #012169;
       color: #ffffff;
       border: none;
-      border-radius: 14px;
-      padding: 16px 20px;
+      border-radius: 10px;
+      padding: 8px 14px;
       width: 100%;
       cursor: pointer;
       transition: background 0.12s, transform 0.08s;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
     .phone-btn:hover  { background: #023099; }
     .phone-btn:active { transform: scale(0.97); }
     .phone-btn-icon {
-      width: 28px; height: 28px;
+      width: 20px; height: 20px;
       background: rgba(242,169,0,0.18);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 4px;
+      flex-shrink: 0;
     }
-    .phone-btn-icon svg { width: 14px; height: 14px; }
+    .phone-btn-icon svg { width: 11px; height: 11px; }
     .phone-btn .phone-num {
-      font-size: 15px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
     }
     .phone-btn .call-label {
-      font-size: 9px;
+      font-size: 8px;
       color: #f2a900;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 1px;
       text-transform: uppercase;
     }
     .no-phone {
@@ -379,19 +390,19 @@
       margin-bottom: 10px;
     }
 
-    /* Email button — mirrors phone-btn with green accent */
+    /* Email button — mirrors phone-btn with green accent, compact */
     .email-btn {
       width: 100%;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 8px;
       background: #1a5e1a;
       color: #ffffff;
       border: none;
-      border-radius: 14px;
-      padding: 16px 10px;
+      border-radius: 10px;
+      padding: 8px 10px;
       cursor: pointer;
       transition: background 0.12s, transform 0.08s;
       min-width: 0;
@@ -399,23 +410,152 @@
     .email-btn:hover  { background: #236b23; }
     .email-btn:active { transform: scale(0.97); }
     .email-btn-icon {
-      width: 28px; height: 28px;
+      width: 20px; height: 20px;
       background: rgba(255,255,255,0.15);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 4px;
+      flex-shrink: 0;
     }
-    .email-btn-icon svg { width: 14px; height: 14px; }
+    .email-btn-icon svg { width: 11px; height: 11px; }
     .email-btn .email-label {
-      font-size: 9px;
+      font-size: 8px;
       color: #a8e6a8;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 1px;
       text-transform: uppercase;
     }
     .email-btn .email-sublabel {
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* ── Live call status banner (mirrors Google Voice's own status/timer) ── */
+    .call-status-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      margin-bottom: 16px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: #eef4ea;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #1a5e1a;
+      letter-spacing: 0.2px;
+    }
+    .call-status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #f2a900;
+      flex-shrink: 0;
+      animation: call-status-pulse 1s ease-in-out infinite;
+    }
+    .call-status-dot.connected { background: #1a5e1a; animation: none; }
+    @keyframes call-status-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── Live Call Controls — bigger widget on the participant card ── */
+    .call-controls {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      background: #f0f4fa;
+      border: 1.5px solid #d0daea;
+      border-radius: 12px;
+      text-align: left;
+    }
+    .call-controls-title {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #012169;
+    }
+    .call-controls-status {
+      display: block;
+      font-size: 11px;
+      color: #7a8fa6;
+      margin-top: 3px;
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cc-row {
+      display: flex;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+    .cc-row:last-of-type { margin-bottom: 0; }
+    .cc-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 8px;
+      border: 1.5px solid #d0daea;
+      background: #fff;
+      color: #5a6a8a;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 9px 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    .cc-btn:hover { background: #e2eaf5; border-color: #012169; color: #012169; }
+    .cc-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #fff;
+      border-color: #d0daea;
+      color: #9aaccb;
+    }
+    .cc-btn-play {
+      flex: 1.4;
+      background: #012169;
+      border-color: #012169;
+      color: #fff;
+    }
+    .cc-btn-play:hover { background: #023099; }
+    .cc-btn-play.cc-btn-stop {
+      background: #b3261e;
+      border-color: #b3261e;
+    }
+    .cc-btn-play.cc-btn-stop:hover { background: #8f1e18; }
+    .cc-btn-mute.cc-mute-active {
+      background: #d32f2f;
+      border-color: #d32f2f;
+      color: #fff;
+    }
+    .cc-btn-mute.cc-mute-active:hover { background: #b52828; }
+    .cc-btn-hangup {
+      background: #fdecea;
+      border-color: #f3b7b0;
+      color: #b3261e;
+    }
+    .cc-btn-hangup:hover { background: #f8d5d1; border-color: #b3261e; color: #8f1e18; }
+
+    .voicemail-warning {
+      margin-top: 8px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: #d32f2f;
+      color: #fff;
       font-size: 11px;
       font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.2px;
+      animation: voicemail-flash 0.6s ease-in-out infinite;
+    }
+    @keyframes voicemail-flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
     }
 
     /* Paste button */
@@ -631,16 +771,7 @@
     }
     .refresh-btn:active svg { transform: rotate(360deg); }
 
-    /* Patient navigator */
-    .patient-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #f0f4fa;
-      border-top: 1px solid #dce6f0;
-      padding: 6px 10px;
-      flex-shrink: 0;
-    }
+    /* Patient navigator (prev/next buttons flank the avatar) */
     .nav-btn {
       width: 28px; height: 28px;
       border-radius: 5px;
@@ -655,10 +786,12 @@
     .nav-btn:disabled { opacity: 0.3; cursor: default; }
     .nav-btn svg { width: 11px; height: 11px; }
     .nav-counter {
+      display: block;
       font-size: 11px;
       font-weight: 700;
       color: #5a6a8a;
       letter-spacing: 0.3px;
+      margin-bottom: 10px;
     }
 
     /* Resize handle */
@@ -787,7 +920,7 @@
     <div id="right-column">
 
       <!-- Patient Info panel -->
-      <div id="patient-panel">
+      <div id="patient-panel" style="flex: 1 1 auto;">
         <div class="panel-header">
           <span class="panel-label">Patient Info</span>
           <button class="refresh-btn" id="refresh-scan" title="Scan screen">
@@ -822,14 +955,51 @@
             <div class="spinner-ring"></div>
           </div>
           <div id="patient-results" style="display:none;">
-            <div class="patient-avatar">
-              <span class="patient-avatar-initials" id="patient-avatar-initials">?</span>
+            <div class="patient-avatar-row">
+              <button class="nav-btn avatar-nav-btn" id="nav-prev" title="Previous patient" style="display:none;">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M8 2L4 6l4 4"/>
+                </svg>
+              </button>
+              <div class="patient-avatar">
+                <span class="patient-avatar-initials" id="patient-avatar-initials">?</span>
+              </div>
+              <button class="nav-btn avatar-nav-btn" id="nav-next" title="Next patient" style="display:none;">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M4 2l4 4-4 4"/>
+                </svg>
+              </button>
             </div>
+            <span class="nav-counter" id="nav-counter" style="display:none;">1 / 1</span>
             <div class="patient-field-label">Patient Name</div>
             <div class="patient-name-val" id="patient-name">—</div>
+
+            <div class="call-status-row" id="call-status-row" style="display:none;">
+              <span class="call-status-dot" id="call-status-dot"></span>
+              <span class="call-status-text" id="call-status-text">—</span>
+            </div>
+
             <div class="patient-field-label">Cell Phone</div>
             <div id="phone-list" style="width:100%;"></div>
             <div id="email-list" style="width:100%;margin-top:8px;"></div>
+
+            <div class="call-controls" id="call-controls">
+              <span class="call-controls-title">Live Call Controls</span>
+              <span class="call-controls-status" id="voicemail-status">No voicemail message set</span>
+              <div class="cc-row">
+                <button class="cc-btn" id="voicemail-upload-btn" title="Choose an audio file to play when a call reaches voicemail">Upload</button>
+                <button class="cc-btn cc-btn-play" id="voicemail-play-btn" title="Play the recorded message into the current call" disabled>▶ Play Message</button>
+              </div>
+              <div class="cc-row">
+                <button class="cc-btn cc-btn-mute" id="voicemail-mute-btn" title="Mute your mic — turns on automatically while the message plays">🎙 Mic Live</button>
+                <button class="cc-btn cc-btn-hangup" id="voicemail-hangup-btn" title="Try to end the current Google Voice call">☎ Hang Up</button>
+              </div>
+              <div class="cc-row">
+                <button class="cc-btn" id="voice-panel-toggle-btn" title="Show or hide the Google Voice panel">👁 Show Google Voice</button>
+              </div>
+              <div class="voicemail-warning" id="voicemail-warning" style="display:none;">⏱ Message ending — get ready to talk!</div>
+            </div>
+
             <button class="scan-btn" id="scan-again-btn">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="5" y="2" width="9" height="11" rx="1"/>
@@ -839,28 +1009,13 @@
             </button>
           </div>
         </div>
-
-        <!-- Patient navigator bar -->
-        <div class="patient-nav" id="patient-nav" style="display:none;">
-          <button class="nav-btn" id="nav-prev" title="Previous patient">
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M8 2L4 6l4 4"/>
-            </svg>
-          </button>
-          <span class="nav-counter" id="nav-counter">1 / 1</span>
-          <button class="nav-btn" id="nav-next" title="Next patient">
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M4 2l4 4-4 4"/>
-            </svg>
-          </button>
-        </div>
       </div>
 
       <!-- Horizontal drag handle -->
-      <div class="resize-handle-h" id="resize-h"></div>
+      <div class="resize-handle-h" id="resize-h" style="display:none;"></div>
 
       <!-- Google Voice sub-panel -->
-      <div id="voice-subpanel">
+      <div id="voice-subpanel" style="display:none;">
         <div class="panel-header">
           <span class="panel-label">Google Voice</span>
           <button class="back-btn" id="voice-back" title="Go back">
@@ -880,6 +1035,7 @@
               <polyline points="10 1 10 4 13 4"/>
             </svg>
           </button>
+          <button class="refresh-btn" id="debug-voice" title="Open DevTools for this panel (for diagnosing call controls)">🐞</button>
         </div>
         <div class="webview-container">
           <div class="loading" id="voice-loading">
@@ -981,6 +1137,417 @@
     }
     setupWebviewLoading('onedrive-view', 'onedrive-loading');
     setupWebviewLoading('voice-view',    'voice-loading');
+
+    // ── Live Call Controls (voicemail drop, mic mute, hang up) ──────
+    // Google Voice has no API for any of this — instead we inject a script
+    // into the embedded voice.google.com page that wraps getUserMedia,
+    // mixing the real microphone (through a gain node we can zero out to
+    // "mute") with a hidden <audio> element that plays the prerecorded
+    // message. Hang Up works the same way: it searches the live page's
+    // DOM for whatever button looks like Google Voice's own end-call
+    // control and clicks it. All of this depends on undocumented behavior
+    // of Google Voice's web page and could break if Google changes it.
+    const VOICEMAIL_WARNING_SECONDS = 3; // start flashing this many seconds before the message ends
+
+    let voicemailDataUrl  = null;
+    let voicemailFileName = null;
+    let voicemailDuration = null; // seconds, or null if unknown
+    let voicemailPollTimer = null;
+    let micMuted = false;
+    let voicemailIsPlaying = false;
+
+    function formatDuration(seconds) {
+      if (!isFinite(seconds) || seconds < 0) seconds = 0;
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${String(s).padStart(2, '0')}`;
+    }
+
+    // Reads the clip's duration in the host page — independent of whatever
+    // is (or isn't) loaded in the Google Voice webview.
+    function probeVoicemailDuration(dataUrl) {
+      return new Promise((resolve) => {
+        if (!dataUrl) return resolve(null);
+        const probe = new Audio();
+        probe.preload = 'metadata';
+        probe.addEventListener('loadedmetadata', () => resolve(isFinite(probe.duration) ? probe.duration : null));
+        probe.addEventListener('error', () => resolve(null));
+        probe.src = dataUrl;
+      });
+    }
+
+    function buildVoicemailInstallScript(dataUrl) {
+      return `(function() {
+        if (!window.__voicemailMixerInstalled) {
+          window.__voicemailMixerInstalled = true;
+          window.__voicemailMicMuted = false; // desired state, survives repeat getUserMedia calls
+          window.__voicemailMixedTrackIds = new Set(); // track ids WE produced (not all of them end up in a real call)
+          window.__voicemailGainByTrackId = new Map(); // track id -> the gain node that feeds it
+          window.__voicemailAttachedGain = null; // the gain node CONFIRMED attached to a live call
+          console.log('[voicemail] getUserMedia override installed');
+
+          // getUserMedia gets called several times per call (volume meters,
+          // device checks, etc.) and only ONE of those tracks actually ends
+          // up attached to the real call. Watch addTrack/replaceTrack and
+          // lock mute control onto whichever of our tracks is confirmed live
+          // — instead of just trusting whichever getUserMedia call was most
+          // recent, which was the bug: later unrelated calls were silently
+          // overwriting the mute control's target after it was set correctly.
+          function lockOntoLiveTrack(track) {
+            if (!track || track.kind !== 'audio' || !window.__voicemailMixedTrackIds.has(track.id)) return;
+            const gain = window.__voicemailGainByTrackId.get(track.id);
+            if (!gain) return;
+            window.__voicemailAttachedGain = gain;
+            window.__voicemailMicGain = gain;
+            gain.gain.value = window.__voicemailMicMuted ? 0 : 1; // re-apply current mute choice to the now-confirmed node
+            console.log('[voicemail] confirmed live track attached to the call — mic mute now targets track', track.id);
+          }
+          if (window.RTCPeerConnection) {
+            const OrigAddTrack = RTCPeerConnection.prototype.addTrack;
+            RTCPeerConnection.prototype.addTrack = function(track) {
+              if (track && track.kind === 'audio') {
+                console.log('[voicemail] pc.addTrack — track', track.id, 'is ours:', window.__voicemailMixedTrackIds.has(track.id));
+                lockOntoLiveTrack(track);
+              }
+              return OrigAddTrack.apply(this, arguments);
+            };
+          }
+          if (window.RTCRtpSender && RTCRtpSender.prototype.replaceTrack) {
+            const OrigReplaceTrack = RTCRtpSender.prototype.replaceTrack;
+            RTCRtpSender.prototype.replaceTrack = function(track) {
+              if (track && track.kind === 'audio') {
+                console.log('[voicemail] sender.replaceTrack — track', track.id, 'is ours:', window.__voicemailMixedTrackIds.has(track.id));
+                lockOntoLiveTrack(track);
+              }
+              return OrigReplaceTrack.apply(this, arguments);
+            };
+          }
+
+          const origGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+          navigator.mediaDevices.getUserMedia = async function(constraints) {
+            const realStream = await origGetUserMedia(constraints);
+            console.log('[voicemail] getUserMedia called by the page, constraints:', constraints, 'document.hidden:', document.hidden, 'visibilityState:', document.visibilityState);
+            if (!constraints || !constraints.audio) return realStream;
+            try {
+              const ctx = window.__voicemailCtx || (window.__voicemailCtx = new (window.AudioContext || window.webkitAudioContext)());
+              const dest = ctx.createMediaStreamDestination();
+              const micGain = ctx.createGain();
+              micGain.gain.value = window.__voicemailMicMuted ? 0 : 1; // honor a mute set before this (re)negotiation
+              ctx.createMediaStreamSource(realStream).connect(micGain).connect(dest);
+              // Provisional only — becomes authoritative once addTrack/replaceTrack
+              // confirms which of these tracks is actually live in a call.
+              if (!window.__voicemailAttachedGain) window.__voicemailMicGain = micGain;
+              const audioEl = window.__voicemailAudioEl || (window.__voicemailAudioEl = new Audio());
+              if (!window.__voicemailSourceNode) {
+                window.__voicemailSourceNode = ctx.createMediaElementSource(audioEl);
+              }
+              window.__voicemailSourceNode.connect(dest);
+              const outStream = new MediaStream();
+              dest.stream.getAudioTracks().forEach(function(t) {
+                outStream.addTrack(t);
+                window.__voicemailMixedTrackIds.add(t.id);
+                window.__voicemailGainByTrackId.set(t.id, micGain);
+              });
+              realStream.getVideoTracks().forEach(function(t) { outStream.addTrack(t); });
+              window.__setMicMuted = function(muted) {
+                window.__voicemailMicMuted = muted;
+                if (!window.__voicemailMicGain) return false;
+                window.__voicemailMicGain.gain.value = muted ? 0 : 1;
+                return true;
+              };
+              audioEl.onended = function() { window.__setMicMuted(false); };
+              window.__playVoicemailMessage = function() {
+                if (!audioEl.src) return false;
+                window.__setMicMuted(true);
+                audioEl.currentTime = 0;
+                audioEl.play().catch(function() {});
+                return true;
+              };
+              window.__stopVoicemailMessage = function() {
+                audioEl.pause();
+                audioEl.currentTime = 0;
+                window.__setMicMuted(false);
+                return true;
+              };
+              console.log('[voicemail] mixer active — mic gain node ready, mute/play/stop wired up. mixed track:', dest.stream.getAudioTracks().map(function(t){return t.id;}));
+              return outStream;
+            } catch (err) {
+              console.error('[voicemail] mixer setup failed, falling back to the real mic stream (mute/play will not work):', err);
+              return realStream;
+            }
+          };
+        }
+        ${dataUrl ? `(window.__voicemailAudioEl || (window.__voicemailAudioEl = new Audio())).src = ${JSON.stringify(dataUrl)};` : ''}
+        if (!window.__playVoicemailMessage) { window.__playVoicemailMessage = function() { return false; }; }
+        if (!window.__stopVoicemailMessage) { window.__stopVoicemailMessage = function() { return false; }; }
+        if (!window.__setMicMuted)          { window.__setMicMuted          = function() { return false; }; }
+        true;
+      })();`;
+    }
+
+    const TRIGGER_VOICEMAIL_PLAY_SCRIPT =
+      `(typeof window.__playVoicemailMessage === 'function') ? window.__playVoicemailMessage() : false;`;
+    const TRIGGER_VOICEMAIL_STOP_SCRIPT =
+      `(typeof window.__stopVoicemailMessage === 'function') ? window.__stopVoicemailMessage() : false;`;
+
+    // Polled while the message is playing, to show time remaining. Reads
+    // the state of the SAME <audio> element that's actually feeding the call.
+    const VOICEMAIL_STATE_SCRIPT = `(function() {
+      const a = window.__voicemailAudioEl;
+      if (!a) return null;
+      return { cur: a.currentTime, dur: a.duration, done: a.paused || a.ended };
+    })();`;
+
+    // Best-effort: hunt for Google Voice's own "end call" button by
+    // aria-label/title/text and click it. Unofficial — no guaranteed match.
+    const HANGUP_SCRIPT = `(function() {
+      const els = Array.from(document.querySelectorAll('button, [role="button"]'));
+      const isMatch = (el) => {
+        const label = ((el.getAttribute('aria-label') || '') + ' ' + (el.title || '') + ' ' + (el.textContent || '')).toLowerCase();
+        return /hang\\s*up|end call|end the call/.test(label);
+      };
+      const btn = els.find(isMatch);
+      if (!btn) return false;
+      btn.click();
+      return true;
+    })();`;
+
+    // Best-effort: after loadURL(...a=nc,<number>) Google Voice shows a
+    // confirm step with a "Call" button before it actually dials. Hunt for
+    // it and click it so "Tap to call" doesn't leave the recruiter stuck on
+    // that screen. "call" is a common word on this page (nav tabs, "Calls"
+    // list, etc.), so this is deliberately narrow: exact-text match first,
+    // preferably inside a dialog, and it skips anything under nav/tab
+    // chrome or containing "calls" (plural).
+    const CONFIRM_CALL_SCRIPT = `(function() {
+      function isVisible(el) {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      }
+      function labelOf(el) {
+        return ((el.getAttribute('aria-label') || '') + ' ' + (el.title || '') + ' ' + (el.textContent || '')).trim().toLowerCase();
+      }
+      const candidates = Array.from(document.querySelectorAll('button, [role="button"]')).filter(isVisible);
+      const dialog = document.querySelector('[role="dialog"], [role="alertdialog"], md-dialog');
+      const pool = dialog ? candidates.filter(function(el) { return dialog.contains(el); }) : candidates;
+
+      let btn = pool.find(function(el) {
+        const l = labelOf(el);
+        return l === 'call' || l === 'place call' || l === 'start call' || l === 'call this number';
+      });
+      if (!btn) {
+        btn = pool.find(function(el) {
+          const l = labelOf(el);
+          if (!l.includes('call') || l.includes('calls')) return false;
+          if (el.closest('nav, header, [role="tab"], [role="tablist"]')) return false;
+          return true;
+        });
+      }
+      if (!btn) return false;
+      btn.click();
+      return true;
+    })();`;
+
+    // Best-effort: mirror Google Voice's own call status/timer text into the
+    // participant card. There's no API for call state either, so this scans
+    // for a visible span whose text looks like a status word ("Calling…",
+    // "Ringing…") or an elapsed-time timer ("0:14") — the same element shows
+    // both over the life of a call, switching from one to the other.
+    const CALL_STATUS_SCRIPT = `(function() {
+      function isVisible(el) {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      }
+      const STATUS_RE = /^(calling|ringing|dialing|connecting|reconnecting|call ended|ended)/i;
+      const TIMER_RE = /^\\d{1,2}:\\d{2}$/;
+      const spans = Array.from(document.querySelectorAll('span')).filter(isVisible);
+      for (const el of spans) {
+        const t = (el.textContent || '').trim();
+        if (!t) continue;
+        if (STATUS_RE.test(t) || TIMER_RE.test(t)) return t;
+      }
+      return null;
+    })();`;
+
+    const callStatusRowEl  = document.getElementById('call-status-row');
+    const callStatusTextEl = document.getElementById('call-status-text');
+    const callStatusDotEl  = document.getElementById('call-status-dot');
+    let callStatusPollTimer  = null;
+    let callStatusMissStreak = 0;
+    const CALL_STATUS_MAX_MISSES = 6; // ~6s of nothing found = treat the call as over
+
+    function stopCallStatusPoll() {
+      if (callStatusPollTimer) { clearInterval(callStatusPollTimer); callStatusPollTimer = null; }
+      callStatusRowEl.style.display = 'none';
+    }
+
+    function startCallStatusPoll() {
+      stopCallStatusPoll();
+      callStatusMissStreak = 0;
+      callStatusRowEl.style.display = 'flex';
+      callStatusTextEl.textContent = 'Calling…';
+      callStatusDotEl.classList.remove('connected');
+      callStatusPollTimer = setInterval(async () => {
+        let text = null;
+        try {
+          text = await document.getElementById('voice-view').executeJavaScript(CALL_STATUS_SCRIPT);
+        } catch (e) { text = null; }
+
+        if (text) {
+          callStatusMissStreak = 0;
+          const isTimer = /^\d{1,2}:\d{2}$/.test(text);
+          callStatusTextEl.textContent = isTimer ? `Connected · ${text}` : text;
+          callStatusDotEl.classList.toggle('connected', isTimer);
+        } else {
+          callStatusMissStreak++;
+          if (callStatusMissStreak >= CALL_STATUS_MAX_MISSES) stopCallStatusPoll();
+        }
+      }, 1000);
+    }
+
+    function installVoicemailMixer() {
+      document.getElementById('voice-view').executeJavaScript(buildVoicemailInstallScript(voicemailDataUrl)).catch(() => {});
+    }
+    document.getElementById('voice-view').addEventListener('dom-ready', installVoicemailMixer);
+
+    const voicemailStatusEl  = document.getElementById('voicemail-status');
+    const voicemailUploadBtn = document.getElementById('voicemail-upload-btn');
+    const voicemailPlayBtn   = document.getElementById('voicemail-play-btn');
+    const voicemailMuteBtn   = document.getElementById('voicemail-mute-btn');
+    const voicemailHangupBtn = document.getElementById('voicemail-hangup-btn');
+    const voicemailWarningEl = document.getElementById('voicemail-warning');
+
+    function stopVoicemailPoll() {
+      if (voicemailPollTimer) { clearInterval(voicemailPollTimer); voicemailPollTimer = null; }
+    }
+
+    function showVoicemailWarning(show) {
+      voicemailWarningEl.style.display = show ? 'block' : 'none';
+    }
+
+    function setMicMutedUI(muted) {
+      micMuted = muted;
+      voicemailMuteBtn.textContent = muted ? '🔇 Mic Muted' : '🎙 Mic Live';
+      voicemailMuteBtn.classList.toggle('cc-mute-active', muted);
+    }
+
+    async function setMicMuted(muted) {
+      let ok = false;
+      try {
+        ok = await document.getElementById('voice-view').executeJavaScript(
+          `(typeof window.__setMicMuted === 'function') ? window.__setMicMuted(${muted}) : false;`
+        );
+      } catch (e) { ok = false; }
+
+      if (ok) {
+        setMicMutedUI(muted);
+      } else {
+        const prevText = voicemailStatusEl.textContent;
+        voicemailStatusEl.textContent = 'Could not mute — start or connect the call first, then try again.';
+        setTimeout(() => { voicemailStatusEl.textContent = prevText; }, 3000);
+      }
+    }
+
+    function updateVoicemailUI() {
+      voicemailIsPlaying = false;
+      if (voicemailFileName) {
+        const durText = voicemailDuration != null ? ` · ${formatDuration(voicemailDuration)}` : '';
+        voicemailStatusEl.textContent = `Message: ${voicemailFileName}${durText}`;
+        voicemailPlayBtn.disabled = false;
+      } else {
+        voicemailStatusEl.textContent = 'No voicemail message set';
+        voicemailPlayBtn.disabled = true;
+      }
+      voicemailPlayBtn.classList.remove('cc-btn-stop');
+      voicemailPlayBtn.textContent = '▶ Play Message';
+      showVoicemailWarning(false);
+    }
+
+    async function loadVoicemailMessage() {
+      const msg = await window.api.getVoicemailMessage();
+      if (msg) {
+        voicemailDataUrl  = msg.dataUrl;
+        voicemailFileName = msg.fileName;
+        voicemailDuration = await probeVoicemailDuration(voicemailDataUrl);
+      }
+      updateVoicemailUI();
+    }
+
+    voicemailUploadBtn.addEventListener('click', async () => {
+      const msg = await window.api.pickVoicemailFile();
+      if (!msg) return;
+      voicemailDataUrl  = msg.dataUrl;
+      voicemailFileName = msg.fileName;
+      voicemailDuration = await probeVoicemailDuration(voicemailDataUrl);
+      updateVoicemailUI();
+      installVoicemailMixer(); // push into the already-loaded Google Voice page right away
+    });
+
+    async function stopVoicemailPlayback() {
+      stopVoicemailPoll();
+      try {
+        await document.getElementById('voice-view').executeJavaScript(TRIGGER_VOICEMAIL_STOP_SCRIPT);
+      } catch (e) {}
+      updateVoicemailUI();
+      setMicMutedUI(false); // mirrors the guest page's auto-unmute on stop
+    }
+
+    voicemailPlayBtn.addEventListener('click', async () => {
+      if (voicemailIsPlaying) { await stopVoicemailPlayback(); return; }
+      if (!voicemailDataUrl) return;
+      stopVoicemailPoll();
+      let played = false;
+      try {
+        played = await document.getElementById('voice-view').executeJavaScript(TRIGGER_VOICEMAIL_PLAY_SCRIPT);
+      } catch (e) { played = false; }
+
+      if (!played) {
+        voicemailStatusEl.textContent = 'Could not play — make sure the call is connected, then try again.';
+        setTimeout(updateVoicemailUI, 3500);
+        return;
+      }
+
+      voicemailIsPlaying = true;
+      voicemailPlayBtn.classList.add('cc-btn-stop');
+      setMicMutedUI(true); // the guest page just auto-muted the mic for us
+      showVoicemailWarning(false);
+      voicemailPlayBtn.textContent = `⏹ Stop · ${formatDuration(voicemailDuration ?? 0)}`;
+      voicemailPollTimer = setInterval(async () => {
+        let state = null;
+        try {
+          state = await document.getElementById('voice-view').executeJavaScript(VOICEMAIL_STATE_SCRIPT);
+        } catch (e) { state = null; }
+
+        if (!state || state.done || !isFinite(state.dur) || state.cur >= state.dur) {
+          stopVoicemailPoll();
+          updateVoicemailUI();
+          setMicMutedUI(false); // mirrors the guest page's auto-unmute on 'ended'
+          return;
+        }
+        const remaining = state.dur - state.cur;
+        voicemailPlayBtn.textContent = `⏹ Stop · ${formatDuration(remaining)}`;
+        showVoicemailWarning(remaining <= VOICEMAIL_WARNING_SECONDS);
+      }, 250);
+    });
+
+    voicemailMuteBtn.addEventListener('click', () => setMicMuted(!micMuted));
+
+    voicemailHangupBtn.addEventListener('click', async () => {
+      if (voicemailIsPlaying) await stopVoicemailPlayback();
+
+      let ended = false;
+      try {
+        ended = await document.getElementById('voice-view').executeJavaScript(HANGUP_SCRIPT);
+      } catch (e) { ended = false; }
+      if (!ended) {
+        const prevText = voicemailStatusEl.textContent;
+        voicemailStatusEl.textContent = "Couldn't find a hang-up button — end the call in the Google Voice panel.";
+        setTimeout(() => { voicemailStatusEl.textContent = prevText; }, 3500);
+      }
+      stopCallStatusPoll();
+    });
+
+    loadVoicemailMessage();
 
     // ── OneDrive: open Excel/new-window links inside webview ───────
     const onedriveView = document.getElementById('onedrive-view');
@@ -1090,6 +1657,9 @@
     });
     document.getElementById('refresh-voice').addEventListener('click', () => {
       document.getElementById('voice-view').reload();
+    });
+    document.getElementById('debug-voice').addEventListener('click', () => {
+      document.getElementById('voice-view').openDevTools();
     });
     // ── Patient info scanner ──────────────────────────────────────
     const voiceView = document.getElementById('voice-view');
@@ -1240,11 +1810,34 @@
       return raw;
     }
 
+    // After the page finishes loading, keep trying to click Google Voice's
+    // "Call" confirm button for a few seconds — its confirm dialog renders
+    // client-side, so it isn't necessarily there yet at did-finish-load.
+    function autoConfirmCall() {
+      let attempts = 0;
+      const maxAttempts = 20; // ~8s at 400ms
+      const tryConfirm = () => {
+        attempts++;
+        voiceView.executeJavaScript(CONFIRM_CALL_SCRIPT).then((clicked) => {
+          if (!clicked && attempts < maxAttempts) setTimeout(tryConfirm, 400);
+        }).catch(() => {
+          if (attempts < maxAttempts) setTimeout(tryConfirm, 400);
+        });
+      };
+      const onLoad = () => {
+        voiceView.removeEventListener('did-finish-load', onLoad);
+        setTimeout(tryConfirm, 500);
+      };
+      voiceView.addEventListener('did-finish-load', onLoad);
+    }
+
     function dialNumber(raw) {
       const digits = raw.replace(/\D/g, '');
       const e164 = digits.length === 10 ? `+1${digits}` : `+${digits}`;
       // Navigate Google Voice to the call screen for this number
       voiceView.loadURL(`https://voice.google.com/u/0/calls?a=nc,${encodeURIComponent(e164)}`);
+      autoConfirmCall();
+      startCallStatusPoll();
     }
 
     async function emailPatient(p) {
@@ -1286,7 +1879,10 @@
       showPatient(0);
 
       document.getElementById('patient-results').style.display = 'flex';
-      document.getElementById('patient-nav').style.display = patients.length > 1 ? 'flex' : 'none';
+      const showNav = patients.length > 1 ? 'flex' : 'none';
+      document.getElementById('nav-prev').style.display = showNav;
+      document.getElementById('nav-next').style.display = showNav;
+      document.getElementById('nav-counter').style.display = patients.length > 1 ? 'block' : 'none';
     }
 
     document.getElementById('scan-btn').addEventListener('click', runScan);
@@ -1321,6 +1917,23 @@
       window.addEventListener('mouseup', onUp);
       e.preventDefault();
     });
+
+    // ── Google Voice panel visibility ──────────────────────────────
+    // Hidden by default — call controls live on the participant card now,
+    // so there's no need to look at the raw Google Voice page day-to-day.
+    const voiceSubpanel      = document.getElementById('voice-subpanel');
+    const voicePanelToggleBtn = document.getElementById('voice-panel-toggle-btn');
+    let voicePanelHidden = true;
+
+    function setVoicePanelHidden(hidden) {
+      voicePanelHidden = hidden;
+      voiceSubpanel.style.display = hidden ? 'none' : 'flex';
+      resizeH.style.display = hidden ? 'none' : 'block';
+      patientPanel.style.flex = hidden ? '1 1 auto' : '0 0 50%';
+      voicePanelToggleBtn.textContent = hidden ? '👁 Show Google Voice' : '🙈 Hide Google Voice';
+    }
+
+    voicePanelToggleBtn.addEventListener('click', () => setVoicePanelHidden(!voicePanelHidden));
 
     // ── Route new-window URLs into the correct panel ──────────────
     window.api.onOpenInPanel((url) => {

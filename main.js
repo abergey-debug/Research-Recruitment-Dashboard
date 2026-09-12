@@ -5,8 +5,7 @@ const os   = require('os');
 const { execFile } = require('child_process');
 
 const PDF_FOLDERS = [
-  path.join(os.homedir(), 'PREVENTABLE RECRUITMENT'),
-  path.join(os.homedir(), 'PREVENTABLE'),
+  path.join(os.homedir(), 'PREVENTABLE RECRUITMENT', 'PREVENTABLE Files', 'Call Files'),
 ];
 
 function getPDFFiles() {
@@ -56,7 +55,7 @@ function createWindow() {
   mainWin = new BrowserWindow({
     width: 1600,
     height: 950,
-    title: 'PREVENTABLE Recruitment Dashboard',
+    title: 'Research Recruitment Dashboard',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -98,11 +97,6 @@ function createWindow() {
 app.whenReady().then(() => {
   ipcMain.handle('get-pdf-files', () => getPDFFiles());
 
-  ipcMain.handle('get-pdf-data', (e, filePath) => {
-    try { return fs.readFileSync(filePath).toString('base64'); }
-    catch { return null; }
-  });
-
   // Read whatever is currently on the clipboard (user copies from Excel themselves)
   ipcMain.handle('open-folder', () => {
     shell.openPath(path.join(os.homedir(), 'PREVENTABLE'));
@@ -117,7 +111,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('send-email', (e, { to, name }) => {
-    const emailDir = path.join(os.homedir(), 'PREVENTABLE', 'Email Files');
+    const emailDir = path.join(os.homedir(), 'PREVENTABLE RECRUITMENT', 'PREVENTABLE Files', 'Email Files');
     const firstName = (name || '').split(' ')[0] || 'there';
     const attachments = [
       path.join(emailDir, 'Participant_FAQ_English.pdf'),
@@ -139,7 +133,16 @@ app.whenReady().then(() => {
     // AppleScript doesn't support backslash escapes — split on any double quotes and rejoin with & quote &
     const asHtml = '"' + htmlBody.replace(/"/g, '" & quote & "') + '"';
 
-    const script = `tell application "Microsoft Outlook"
+    const script = `if application "Microsoft Outlook" is not running then
+  tell application "Microsoft Outlook" to launch
+  repeat until application "Microsoft Outlook" is running
+    delay 0.3
+  end repeat
+  delay 2
+end if
+
+tell application "Microsoft Outlook"
+  activate
   set newMsg to make new outgoing message with properties {subject:"PREVENTABLE Trial - Study Information"}
   set content of newMsg to ${asHtml}
   make new recipient at newMsg with properties {email address:{address:"${to}"}}

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>PREVENTABLE Recruitment Dashboard — Emory</title>
+  <title>Research Recruitment Dashboard — Emory</title>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
   <style>
     html, body { height: 100%; margin: 0; padding: 0; }
     * { box-sizing: border-box; }
@@ -57,19 +58,13 @@
 
     .app-title {
       display: flex;
-      flex-direction: column;
-    }
-    .app-title .study {
-      font-size: 9px;
-      font-weight: 600;
-      color: rgba(242,169,0,0.85);
-      letter-spacing: 1.8px;
-      text-transform: uppercase;
+      align-items: center;
     }
     .app-title .label {
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 700;
       color: #ffffff;
+      letter-spacing: 0.2px;
     }
 
     /* Medical cross badge */
@@ -100,33 +95,6 @@
     }
     .folder-btn:hover { background: rgba(242,169,0,0.28); border-color: #f2a900; }
     .folder-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .med-cross {
-      width: 22px;
-      height: 22px;
-      position: relative;
-      flex-shrink: 0;
-    }
-    .med-cross::before,
-    .med-cross::after {
-      content: '';
-      position: absolute;
-      background: rgba(242,169,0,0.7);
-      border-radius: 2px;
-    }
-    .med-cross::before { width: 100%; height: 36%; top: 32%; left: 0; }
-    .med-cross::after  { width: 36%; height: 100%; top: 0; left: 32%; }
-
-    .status-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #4ade80;
-      box-shadow: 0 0 6px #4ade80;
-    }
-    .status-text {
-      font-size: 10px;
-      color: rgba(255,255,255,0.55);
-      letter-spacing: 0.5px;
-    }
 
     /* ── Protected banner ── */
     .protected-banner {
@@ -195,46 +163,29 @@
       min-width: 0;
     }
 
-    /* Tabs */
-    .tabs {
-      display: flex;
-      overflow-x: auto;
-      scrollbar-width: none;
+    /* Document picker (dropdown replacing the old tab strip) */
+    .doc-select {
       flex: 1;
+      height: 100%;
+      min-width: 0;
       background: #f0f4fa;
-    }
-    .tabs::-webkit-scrollbar { display: none; }
-
-    .tab {
-      padding: 0 13px;
-      font-size: 11.5px;
-      cursor: pointer;
-      white-space: nowrap;
-      color: #5a6a8a;
-      border-right: 1px solid #dce6f0;
-      border-bottom: 3px solid transparent;
-      transition: all 0.12s;
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-      gap: 6px;
-    }
-    .tab:hover { background: #e2eaf5; color: #012169; }
-    .tab.active {
-      background: #ffffff;
       color: #012169;
+      font-size: 12px;
       font-weight: 600;
-      border-bottom: 3px solid #f2a900;
+      border: none;
+      border-right: 1px solid #d0daea;
+      padding: 0 30px 0 14px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5l3.5 3.5 3.5-3.5' fill='none' stroke='%23012169' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 9px 9px;
+      transition: background 0.12s;
     }
-    .tab .folder-badge {
-      font-size: 9px;
-      background: #012169;
-      color: #f2a900;
-      border-radius: 3px;
-      padding: 1px 5px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-    }
+    .doc-select:hover  { background-color: #e2eaf5; }
+    .doc-select:focus  { outline: none; background-color: #ffffff; }
 
     /* Panel separators */
     #pdf-panel      { flex: 0 0 42%; border-right: 3px solid #012169; }
@@ -389,6 +340,10 @@
       font-size: 12px;
       margin-bottom: 10px;
     }
+    .no-email {
+      color: #b0bece;
+      font-size: 12px;
+    }
 
     /* Email button — mirrors phone-btn with green accent, compact */
     .email-btn {
@@ -423,10 +378,15 @@
       font-weight: 700;
       letter-spacing: 1px;
       text-transform: uppercase;
+      flex-shrink: 0;
     }
     .email-btn .email-sublabel {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
+      max-width: 130px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* ── Live call status banner (mirrors Google Voice's own status/timer) ── */
@@ -491,6 +451,24 @@
       margin-bottom: 7px;
     }
     .cc-row:last-of-type { margin-bottom: 0; }
+    .cc-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 7px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #5a6a8a;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cc-checkbox-row input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: #012169;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
     .cc-btn {
       flex: 1;
       display: flex;
@@ -509,6 +487,7 @@
       transition: background 0.12s, border-color 0.12s, color 0.12s;
     }
     .cc-btn:hover { background: #e2eaf5; border-color: #012169; color: #012169; }
+    .cc-btn iconify-icon { font-size: 15px; flex-shrink: 0; }
     .cc-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -552,6 +531,11 @@
       text-align: center;
       letter-spacing: 0.2px;
       animation: voicemail-flash 0.6s ease-in-out infinite;
+    }
+    .voicemail-warning iconify-icon {
+      font-size: 13px;
+      vertical-align: -2px;
+      margin-right: 5px;
     }
     @keyframes voicemail-flash {
       0%, 100% { opacity: 1; }
@@ -821,8 +805,7 @@
     <div class="topbar-divider"></div>
 
     <div class="app-title">
-      <span class="study">PREVENTABLE Trial</span>
-      <span class="label">Recruitment Dashboard</span>
+      <span class="label">Research Recruitment Dashboard</span>
     </div>
 
     <div class="med-badge">
@@ -832,9 +815,6 @@
         </svg>
         Open Folder
       </button>
-      <div class="med-cross"></div>
-      <div class="status-dot"></div>
-      <span class="status-text">Active Session</span>
     </div>
   </div>
   <div class="gold-bar"></div>
@@ -855,12 +835,7 @@
           </svg>
           Back
         </button>
-        <div class="tabs" id="pdf-tabs"></div>
-        <div class="zoom-controls">
-          <button class="zoom-btn" id="zoom-pdf-out" title="Zoom out">−</button>
-          <span class="zoom-pct" id="zoom-pdf-pct">100%</span>
-          <button class="zoom-btn" id="zoom-pdf-in"  title="Zoom in">+</button>
-        </div>
+        <select class="doc-select" id="pdf-select"></select>
         <button class="refresh-btn" id="refresh-pdf" title="Reload PDF">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M13.5 8A5.5 5.5 0 1 1 10 3.07"/>
@@ -979,7 +954,7 @@
               <span class="call-status-text" id="call-status-text">—</span>
             </div>
 
-            <div class="patient-field-label">Cell Phone</div>
+            <div class="patient-field-label">Phone</div>
             <div id="phone-list" style="width:100%;"></div>
             <div id="email-list" style="width:100%;margin-top:8px;"></div>
 
@@ -987,17 +962,21 @@
               <span class="call-controls-title">Live Call Controls</span>
               <span class="call-controls-status" id="voicemail-status">No voicemail message set</span>
               <div class="cc-row">
-                <button class="cc-btn" id="voicemail-upload-btn" title="Choose an audio file to play when a call reaches voicemail">Upload</button>
-                <button class="cc-btn cc-btn-play" id="voicemail-play-btn" title="Play the recorded message into the current call" disabled>▶ Play Message</button>
+                <button class="cc-btn" id="voicemail-upload-btn" title="Choose an audio file to play when a call reaches voicemail"><iconify-icon icon="mdi:tray-arrow-up"></iconify-icon>Upload</button>
+                <button class="cc-btn cc-btn-play" id="voicemail-play-btn" title="Play the recorded message into the current call" disabled><iconify-icon icon="mdi:play" id="voicemail-play-icon"></iconify-icon><span id="voicemail-play-label">Play Message</span></button>
               </div>
               <div class="cc-row">
-                <button class="cc-btn cc-btn-mute" id="voicemail-mute-btn" title="Mute your mic — turns on automatically while the message plays">🎙 Mic Live</button>
-                <button class="cc-btn cc-btn-hangup" id="voicemail-hangup-btn" title="Try to end the current Google Voice call">☎ Hang Up</button>
+                <button class="cc-btn cc-btn-mute" id="voicemail-mute-btn" title="Mute your mic — turns on automatically while the message plays"><iconify-icon icon="mdi:microphone"></iconify-icon>Mic Live</button>
+                <button class="cc-btn cc-btn-hangup" id="voicemail-hangup-btn" title="Try to end the current Google Voice call"><iconify-icon icon="mdi:phone-hangup"></iconify-icon>Hang Up</button>
               </div>
+              <label class="cc-checkbox-row" title="When checked, hanging up happens automatically as soon as the message finishes playing">
+                <input type="checkbox" id="auto-hangup-checkbox" checked>
+                <span>Auto Hang Up when message ends</span>
+              </label>
               <div class="cc-row">
-                <button class="cc-btn" id="voice-panel-toggle-btn" title="Show or hide the Google Voice panel">👁 Show Google Voice</button>
+                <button class="cc-btn" id="voice-panel-toggle-btn" title="Show or hide the Google Voice panel"><iconify-icon icon="mdi:eye-outline"></iconify-icon>Show Google Voice</button>
               </div>
-              <div class="voicemail-warning" id="voicemail-warning" style="display:none;">⏱ Message ending — get ready to talk!</div>
+              <div class="voicemail-warning" id="voicemail-warning" style="display:none;"><iconify-icon icon="mdi:timer-alert-outline"></iconify-icon>Message ending — get ready to talk!</div>
             </div>
 
             <button class="scan-btn" id="scan-again-btn">
@@ -1057,68 +1036,85 @@
   </div>
 
   <script>
-    // ── PDF Tabs ───────────────────────────────────────────────────
-    const tabsEl    = document.getElementById('pdf-tabs');
-    const pdfEmbed  = document.getElementById('pdf-embed');
-    const pdfLoad   = document.getElementById('pdf-loading');
-    const pdfBack   = document.getElementById('pdf-back');
-    const pdfHistory = []; // stack of {file, tabEl}
+    // ── Document picker (dropdown) ──────────────────────────────────
+    const pdfSelect  = document.getElementById('pdf-select');
+    const pdfEmbed   = document.getElementById('pdf-embed');
+    const pdfLoad    = document.getElementById('pdf-loading');
+    const pdfBack    = document.getElementById('pdf-back');
+    let pdfFiles     = [];
+    const pdfHistory = []; // stack of file indexes
 
     async function loadPDFTabs() {
-      const files = await window.api.getPDFFiles();
-      if (!files || !files.length) {
+      pdfFiles = await window.api.getPDFFiles();
+      if (!pdfFiles || !pdfFiles.length) {
         pdfLoad.querySelector('.site-name').textContent = 'No PDFs found.';
         return;
       }
-      files.forEach((file, i) => {
-        const tab = document.createElement('div');
-        tab.className = 'tab' + (i === 0 ? ' active' : '');
-
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = file.name;
-
-        const badge = document.createElement('span');
-        badge.className = 'folder-badge';
-        badge.textContent = file.folder === 'PREVENTABLE RECRUITMENT' ? 'RCT' : 'Study';
-
-        tab.appendChild(nameSpan);
-        tab.appendChild(badge);
-        tab.title = file.path;
-        tab._fileRef = file;
-        tab.addEventListener('click', () => selectPDF(file, tab));
-        tabsEl.appendChild(tab);
-        if (i === 0) selectPDF(file, tab);
+      pdfFiles.forEach((file, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = file.name;
+        opt.title = file.path;
+        pdfSelect.appendChild(opt);
       });
+      // Always boot up with the script open, not just whatever sorts first.
+      const scriptIdx = pdfFiles.findIndex(f => /script/i.test(f.name));
+      selectPDF(scriptIdx !== -1 ? scriptIdx : 0);
     }
 
-    async function selectPDF(file, tabEl, skipHistory) {
+    pdfSelect.addEventListener('change', () => selectPDF(parseInt(pdfSelect.value, 10)));
+
+    let pdfLoadToken = 0; // guards against a stale reveal firing for a since-superseded load
+
+    function selectPDF(idx, skipHistory) {
+      const file = pdfFiles[idx];
+      if (!file) return;
+
       // Track history for back button
-      const current = document.querySelector('.tab.active');
-      if (current && !skipHistory) {
-        const currentFile = current._fileRef;
-        if (currentFile) pdfHistory.push({ file: currentFile, tabEl: current });
+      const currentIdx = parseInt(pdfSelect.value, 10);
+      if (!Number.isNaN(currentIdx) && currentIdx !== idx && !skipHistory) {
+        pdfHistory.push(currentIdx);
         pdfBack.style.display = pdfHistory.length ? 'flex' : 'none';
       }
 
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tabEl.classList.add('active');
+      pdfSelect.value = idx;
       pdfEmbed.style.display = 'none';
       pdfLoad.style.display = 'flex';
       pdfLoad.querySelector('.site-name').textContent = 'Loading…';
 
-      const b64 = await window.api.getPDFData(file.path);
-      if (!b64) { pdfLoad.querySelector('.site-name').textContent = 'Could not load file.'; return; }
+      // Load the file directly (file://) instead of round-tripping it through
+      // IPC as base64 — the large MOP PDF (~11MB) was failing to render as a
+      // ~15MB data: URI; a direct file URL is faster and has no size ceiling.
+      //
+      // Chromium's built-in PDF viewer apparently never fires a reliable
+      // iframe 'load' event in this embedding — the spinner was getting
+      // stuck forever waiting for one. So onload is now just a bonus (hides
+      // the spinner early if it happens to fire), and a timeout is the real
+      // mechanism that guarantees the spinner always goes away. The token
+      // check stops a stale timeout from an earlier click hiding the
+      // spinner for a document you've since switched away from.
+      const myToken = ++pdfLoadToken;
+      const reveal = () => {
+        if (myToken !== pdfLoadToken) return;
+        pdfEmbed.style.display = 'block';
+        pdfLoad.style.display = 'none';
+      };
+      pdfEmbed.onload = reveal;
+      setTimeout(reveal, 2000);
 
-      pdfEmbed.src = 'data:application/pdf;base64,' + b64;
-      pdfEmbed.style.display = 'block';
-      pdfLoad.style.display = 'none';
+      // #zoom=100 tells Chromium's built-in PDF viewer to open at actual size
+      // instead of its own "fit to width" default (which was showing ~86%).
+      // A trailing unique param keeps the URL different every time (e.g. on
+      // Reload) — setting src to a URL that's already loaded is a no-op in
+      // most browsers, so a real reload wouldn't otherwise happen at all.
+      pdfEmbed.src = 'file://' + encodeURI(file.path) + '#zoom=100&r=' + Date.now();
     }
 
     // ── Back buttons ──────────────────────────────────────────────
     // PDF back
     pdfBack.addEventListener('click', () => {
-      const prev = pdfHistory.pop();
-      if (prev) selectPDF(prev.file, prev.tabEl, true);
+      const prevIdx = pdfHistory.pop();
+      if (prevIdx !== undefined) selectPDF(prevIdx, true);
       pdfBack.style.display = pdfHistory.length ? 'flex' : 'none';
     });
 
@@ -1161,6 +1157,14 @@
       const m = Math.floor(seconds / 60);
       const s = Math.floor(seconds % 60);
       return `${m}:${String(s).padStart(2, '0')}`;
+    }
+
+    // Only the label text changes every tick — the icon element itself is
+    // never recreated, otherwise the iconify-icon web component re-renders
+    // from scratch each time and visibly flashes/jitters.
+    function setPlayBtnStopLabel(remainingSeconds) {
+      document.getElementById('voicemail-play-icon').setAttribute('icon', 'mdi:stop');
+      document.getElementById('voicemail-play-label').textContent = `Stop · ${formatDuration(remainingSeconds)}`;
     }
 
     // Reads the clip's duration in the host page — independent of whatever
@@ -1416,18 +1420,50 @@
     const voicemailMuteBtn   = document.getElementById('voicemail-mute-btn');
     const voicemailHangupBtn = document.getElementById('voicemail-hangup-btn');
     const voicemailWarningEl = document.getElementById('voicemail-warning');
+    const autoHangupCheckbox = document.getElementById('auto-hangup-checkbox');
 
     function stopVoicemailPoll() {
       if (voicemailPollTimer) { clearInterval(voicemailPollTimer); voicemailPollTimer = null; }
     }
 
+    // Plays locally through your own speakers — this is a separate
+    // AudioContext in the host window, not the one mixed into the call, so
+    // the other party never hears it.
+    function playTones(frequencies) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = ctx.currentTime;
+        frequencies.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const start = now + i * 0.12;
+          gain.gain.setValueAtTime(0, start);
+          gain.gain.linearRampToValueAtTime(0.25, start + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + 0.4);
+        });
+        setTimeout(() => ctx.close(), 800);
+      } catch (e) {}
+    }
+    const playStartChime = () => playTones([660]);       // single tone: message starting
+    const playChime      = () => playTones([880, 1320]); // ascending two-note: message ending soon
+
+    let voicemailWarningActive = false;
     function showVoicemailWarning(show) {
+      if (show && !voicemailWarningActive) playChime(); // only on the OFF -> ON edge
+      voicemailWarningActive = show;
       voicemailWarningEl.style.display = show ? 'block' : 'none';
     }
 
     function setMicMutedUI(muted) {
       micMuted = muted;
-      voicemailMuteBtn.textContent = muted ? '🔇 Mic Muted' : '🎙 Mic Live';
+      voicemailMuteBtn.innerHTML = muted
+        ? '<iconify-icon icon="mdi:microphone-off"></iconify-icon>Mic Muted'
+        : '<iconify-icon icon="mdi:microphone"></iconify-icon>Mic Live';
       voicemailMuteBtn.classList.toggle('cc-mute-active', muted);
     }
 
@@ -1459,7 +1495,8 @@
         voicemailPlayBtn.disabled = true;
       }
       voicemailPlayBtn.classList.remove('cc-btn-stop');
-      voicemailPlayBtn.textContent = '▶ Play Message';
+      document.getElementById('voicemail-play-icon').setAttribute('icon', 'mdi:play');
+      document.getElementById('voicemail-play-label').textContent = 'Play Message';
       showVoicemailWarning(false);
     }
 
@@ -1511,7 +1548,8 @@
       voicemailPlayBtn.classList.add('cc-btn-stop');
       setMicMutedUI(true); // the guest page just auto-muted the mic for us
       showVoicemailWarning(false);
-      voicemailPlayBtn.textContent = `⏹ Stop · ${formatDuration(voicemailDuration ?? 0)}`;
+      playStartChime();
+      setPlayBtnStopLabel(voicemailDuration ?? 0);
       voicemailPollTimer = setInterval(async () => {
         let state = null;
         try {
@@ -1519,20 +1557,24 @@
         } catch (e) { state = null; }
 
         if (!state || state.done || !isFinite(state.dur) || state.cur >= state.dur) {
+          // Only trust a confirmed end-of-message state (not a poll error) as
+          // the trigger for auto hang-up.
+          const finishedNaturally = !!(state && isFinite(state.dur) && (state.done || state.cur >= state.dur));
           stopVoicemailPoll();
           updateVoicemailUI();
           setMicMutedUI(false); // mirrors the guest page's auto-unmute on 'ended'
+          if (finishedNaturally && autoHangupCheckbox.checked) hangUpCall();
           return;
         }
         const remaining = state.dur - state.cur;
-        voicemailPlayBtn.textContent = `⏹ Stop · ${formatDuration(remaining)}`;
+        setPlayBtnStopLabel(remaining);
         showVoicemailWarning(remaining <= VOICEMAIL_WARNING_SECONDS);
       }, 250);
     });
 
     voicemailMuteBtn.addEventListener('click', () => setMicMuted(!micMuted));
 
-    voicemailHangupBtn.addEventListener('click', async () => {
+    async function hangUpCall() {
       if (voicemailIsPlaying) await stopVoicemailPlayback();
 
       let ended = false;
@@ -1545,7 +1587,10 @@
         setTimeout(() => { voicemailStatusEl.textContent = prevText; }, 3500);
       }
       stopCallStatusPoll();
-    });
+      return ended;
+    }
+
+    voicemailHangupBtn.addEventListener('click', hangUpCall);
 
     loadVoicemailMessage();
 
@@ -1629,12 +1674,6 @@
       });
     }
 
-    // PDF iframe — use CSS zoom
-    makeZoom('zoom-pdf-in', 'zoom-pdf-out', 'zoom-pdf-pct',
-      () => document.getElementById('pdf-embed'),
-      (f, el) => { if (el) el.style.zoom = f; }
-    );
-
     // OneDrive webview — use setZoomFactor
     makeZoom('zoom-od-in', 'zoom-od-out', 'zoom-od-pct',
       () => document.getElementById('onedrive-view'),
@@ -1649,8 +1688,8 @@
 
     // ── Refresh buttons ───────────────────────────────────────────
     document.getElementById('refresh-pdf').addEventListener('click', () => {
-      const activeTab = document.querySelector('.tab.active');
-      if (activeTab) activeTab.click();
+      const idx = parseInt(pdfSelect.value, 10);
+      if (!Number.isNaN(idx)) selectPDF(idx, true);
     });
     document.getElementById('refresh-onedrive').addEventListener('click', () => {
       document.getElementById('onedrive-view').reload();
@@ -1687,39 +1726,51 @@
       const emailList = document.getElementById('email-list');
       emailList.innerHTML = '';
 
-      // Call button
-      if (p.phone && p.phone.match(/\d{3}/)) {
-        const btn = document.createElement('button');
-        btn.className = 'phone-btn';
-        btn.innerHTML = `
-          <div class="phone-btn-icon">
-            <svg viewBox="0 0 16 16" fill="white">
-              <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58L3.654 1.328z"/>
-            </svg>
-          </div>
-          <span class="phone-num">${formatPhone(p.phone)}</span>
-          <span class="call-label">Tap to call</span>
-        `;
-        btn.addEventListener('click', () => dialNumber(p.phone));
-        phoneList.appendChild(btn);
+      // Call button(s) — cell and, if on file, home
+      const numbers = [];
+      if (p.phone && p.phone.match(/\d{3}/)) numbers.push({ value: p.phone, kind: 'Cell' });
+      if (p.home  && p.home.match(/\d{3}/))  numbers.push({ value: p.home,  kind: 'Home' });
+
+      if (numbers.length) {
+        numbers.forEach(n => {
+          const btn = document.createElement('button');
+          btn.className = 'phone-btn';
+          btn.innerHTML = `
+            <div class="phone-btn-icon">
+              <svg viewBox="0 0 16 16" fill="white">
+                <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58L3.654 1.328z"/>
+              </svg>
+            </div>
+            <span class="phone-num">${formatPhone(n.value)}</span>
+            <span class="call-label">${numbers.length > 1 ? n.kind + ' · Tap to call' : 'Tap to call'}</span>
+          `;
+          btn.addEventListener('click', () => dialNumber(n.value));
+          phoneList.appendChild(btn);
+        });
       } else {
         phoneList.innerHTML = '<div class="no-phone">No phone number on file</div>';
       }
 
-      // Email button (always shown)
-      const emailBtn = document.createElement('button');
-      emailBtn.className = 'email-btn';
-      emailBtn.innerHTML = `
-        <div class="email-btn-icon">
-          <svg viewBox="0 0 16 16" fill="white">
-            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114V5.383zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.731z"/>
-          </svg>
-        </div>
-        <span class="email-sublabel">Email Patient</span>
-        <span class="email-label">Tap to email</span>
-      `;
-      emailBtn.addEventListener('click', () => emailPatient(p));
-      emailList.appendChild(emailBtn);
+      // Email button
+      if (p.email && p.email.includes('@')) {
+        const emailBtn = document.createElement('button');
+        emailBtn.className = 'email-btn';
+        emailBtn.title = p.email;
+        emailBtn.innerHTML = `
+          <div class="email-btn-icon">
+            <svg viewBox="0 0 16 16" fill="white">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114V5.383zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.731z"/>
+            </svg>
+          </div>
+          <span class="email-sublabel"></span>
+          <span class="email-label">Tap to email</span>
+        `;
+        emailBtn.querySelector('.email-sublabel').textContent = p.email;
+        emailBtn.addEventListener('click', () => emailPatient(p));
+        emailList.appendChild(emailBtn);
+      } else {
+        emailList.innerHTML = '<div class="no-email">No email on file</div>';
+      }
 
       document.getElementById('nav-counter').textContent = `${idx + 1} / ${currentPatients.length}`;
       document.getElementById('nav-prev').disabled = idx === 0;
@@ -1770,15 +1821,16 @@
     function parsePatientInfo(text) {
       const rows = parseTSV(text);
 
-      // Find the header row with FULL NAME, CELL #, and EMAIL
-      let nameCol = -1, cellCol = -1, emailCol = -1, headerIdx = -1;
+      // Find the header row with FULL NAME, CELL #, HOME #, and EMAIL
+      let nameCol = -1, cellCol = -1, homeCol = -1, emailCol = -1, headerIdx = -1;
       for (let i = 0; i < rows.length; i++) {
         const upper = rows[i].map(c => c.trim().toUpperCase());
         const ni = upper.findIndex(c => c === 'FULL NAME' || c === 'FULLNAME' || c === 'NAME');
         const ci = upper.findIndex(c => c === 'CELL #' || c === 'CELL#' || c === 'CELL' || c.includes('CELL'));
+        const hi = upper.findIndex(c => c === 'HOME #' || c === 'HOME#' || c === 'HOME' || c.includes('HOME'));
         const ei = upper.findIndex(c => c.includes('EMAIL') || c.includes('E-MAIL') || c.includes('MAIL'));
         if (ni !== -1 || ci !== -1) {
-          nameCol = ni; cellCol = ci; emailCol = ei; headerIdx = i;
+          nameCol = ni; cellCol = ci; homeCol = hi; emailCol = ei; headerIdx = i;
           break;
         }
       }
@@ -1793,9 +1845,10 @@
           const rawName  = nameCol >= 0 ? (row[nameCol] || '') : '';
           const name     = rawName.split('\n')[0].trim() || null;
           const phone    = cellCol >= 0 ? (row[cellCol] || '').trim() : null;
+          const home     = homeCol >= 0 ? (row[homeCol] || '').trim() : null;
           const email    = emailCol >= 0 ? (row[emailCol] || '').trim() : null;
 
-          if (name || phone) patients.push({ name, phone: phone || null, email: email || null });
+          if (name || phone || home) patients.push({ name, phone: phone || null, home: home || null, email: email || null });
         }
       }
 
@@ -1930,7 +1983,9 @@
       voiceSubpanel.style.display = hidden ? 'none' : 'flex';
       resizeH.style.display = hidden ? 'none' : 'block';
       patientPanel.style.flex = hidden ? '1 1 auto' : '0 0 50%';
-      voicePanelToggleBtn.textContent = hidden ? '👁 Show Google Voice' : '🙈 Hide Google Voice';
+      voicePanelToggleBtn.innerHTML = hidden
+        ? '<iconify-icon icon="mdi:eye-outline"></iconify-icon>Show Google Voice'
+        : '<iconify-icon icon="mdi:eye-off-outline"></iconify-icon>Hide Google Voice';
     }
 
     voicePanelToggleBtn.addEventListener('click', () => setVoicePanelHidden(!voicePanelHidden));

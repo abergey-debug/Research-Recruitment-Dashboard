@@ -5,7 +5,7 @@ const os   = require('os');
 const { execFile } = require('child_process');
 
 const PDF_FOLDERS = [
-  path.join(os.homedir(), 'PREVENTABLE RECRUITMENT', 'PREVENTABLE Files', 'Call Files'),
+  path.join(os.homedir(), 'Research Recruitment Dashboard', 'Research Files', 'Call Files'),
 ];
 
 function getPDFFiles() {
@@ -97,9 +97,8 @@ function createWindow() {
 app.whenReady().then(() => {
   ipcMain.handle('get-pdf-files', () => getPDFFiles());
 
-  // Read whatever is currently on the clipboard (user copies from Excel themselves)
   ipcMain.handle('open-folder', () => {
-    shell.openPath(path.join(os.homedir(), 'PREVENTABLE'));
+    shell.openPath(path.join(os.homedir(), 'Research Recruitment Dashboard', 'Research Files'));
   });
 
   ipcMain.handle('scan-onedrive', () => {
@@ -111,7 +110,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('send-email', (e, { to, name }) => {
-    const emailDir = path.join(os.homedir(), 'PREVENTABLE RECRUITMENT', 'PREVENTABLE Files', 'Email Files');
+    const emailDir = path.join(os.homedir(), 'Research Recruitment Dashboard', 'Research Files', 'Email Files');
     const firstName = (name || '').split(' ')[0] || 'there';
     const attachments = [
       path.join(emailDir, 'Participant_FAQ_English.pdf'),

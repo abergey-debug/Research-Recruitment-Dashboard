@@ -8,10 +8,11 @@ using desktop Outlook.
 
 ## Requirements
 
-- **Node.js** (LTS) — the Windows setup script installs this automatically
-  if it's missing (via `winget`, with a permission prompt you'll need to
-  approve); on Mac you'll need to install it yourself first, from
-  [nodejs.org](https://nodejs.org) or `brew install node`.
+- **Node.js** (LTS) — the setup script installs this automatically if
+  it's missing, on both platforms: via `winget` on Windows, via Homebrew
+  on Mac (installing Homebrew itself first if needed). Either way you'll
+  be asked to approve a permission prompt (Windows) or enter your Mac
+  password (Homebrew).
 - **Windows**: classic desktop Microsoft Outlook, installed and signed in
   (the "Email Patient" button automates it directly — this does **not**
   work with the new Outlook for Windows app, which has no automation
@@ -35,16 +36,15 @@ using desktop Outlook.
 
 ### Mac
 
-1. Install [Node.js](https://nodejs.org) if it isn't already (or
-   `brew install node`) — the Mac setup script doesn't install it for you.
-2. Get the code onto your computer — either download this repo as a ZIP
+1. Get the code onto your computer — either download this repo as a ZIP
    from GitHub (green **Code** button → **Download ZIP**) and extract it,
    or `git clone` it.
-3. Open Terminal in the project folder and run `./setup.sh`. It runs
-   `npm install` and puts a **Research Recruitment Dashboard** app icon
-   on your Desktop (a shortcut back into this folder — don't move or
+2. Open Terminal in the project folder and run `./setup.sh`. It installs
+   Node.js if needed (via Homebrew — enter your Mac password if asked),
+   runs `npm install`, and puts a **Research Recruitment Dashboard** app
+   icon on your Desktop (a shortcut back into this folder — don't move or
    delete the folder afterward).
-4. Double-click that Desktop icon any time to launch the app.
+3. Double-click that Desktop icon any time to launch the app.
 
 ## First launch, either platform
 
@@ -83,11 +83,11 @@ using desktop Outlook.
 - **"Email Patient" opens Outlook 2016 / classic Outlook specifically**:
   expected on Windows — desktop automation only works through classic
   Outlook's COM interface, not the new Outlook for Windows app.
-- **Node.js not found** when running `Setup.bat`: it tries to install
-  Node.js automatically via `winget` — approve the Windows permission
-  prompt when it appears. If that fails (older Windows without `winget`,
-  or the prompt was declined), install it manually from
-  [nodejs.org](https://nodejs.org), then run `Setup.bat` again. On Mac,
-  `setup.sh` always requires Node.js to already be installed.
+- **Node.js not found**: both `Setup.bat` (via `winget`) and `setup.sh`
+  (via Homebrew) try to install it automatically — approve the
+  permission prompt/password request when it appears. If that fails
+  (older Windows without `winget`, no internet access, or the prompt was
+  declined), install it manually from [nodejs.org](https://nodejs.org),
+  then run setup again.
 - **PDF viewer shows nothing**: make sure the selected file actually
   exists under `Research Files/Call Files/`.

@@ -10,8 +10,28 @@ echo
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 if ! command -v npm >/dev/null 2>&1; then
-  echo "Node.js was not found on this computer."
-  echo "Install the LTS version from https://nodejs.org (or run 'brew install node'), then run this setup again."
+  echo "Node.js was not found — installing it now via Homebrew."
+
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Homebrew isn't installed either — installing it first."
+    echo "You'll be asked for your Mac password to authorize this."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || true
+
+    if [ -x /opt/homebrew/bin/brew ]; then
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [ -x /usr/local/bin/brew ]; then
+      eval "$(/usr/local/bin/brew shellenv)"
+    fi
+  fi
+
+  if command -v brew >/dev/null 2>&1; then
+    brew install node
+  fi
+fi
+
+if ! command -v npm >/dev/null 2>&1; then
+  echo "Node.js could not be installed automatically."
+  echo "Install the LTS version from https://nodejs.org, then run this setup again."
   exit 1
 fi
 

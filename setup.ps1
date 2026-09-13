@@ -1,10 +1,12 @@
 $ErrorActionPreference = 'Stop'
 $projectDir = $PSScriptRoot
 
+try {
+
 Write-Host "== Research Recruitment Dashboard setup ==" -ForegroundColor Cyan
 Write-Host ""
 
-# ── 1. Make sure Node.js is available ──────────────────────────────
+# -- 1. Make sure Node.js is available --
 $npm = Get-Command npm -ErrorAction SilentlyContinue
 if (-not $npm -and (Test-Path "$env:ProgramFiles\nodejs\npm.cmd")) {
   $env:Path = "$env:ProgramFiles\nodejs;$env:Path"
@@ -14,8 +16,8 @@ if (-not $npm -and (Test-Path "$env:ProgramFiles\nodejs\npm.cmd")) {
 if (-not $npm) {
   $winget = Get-Command winget -ErrorAction SilentlyContinue
   if ($winget) {
-    Write-Host "Node.js was not found — installing it now via winget." -ForegroundColor Yellow
-    Write-Host "Windows will likely ask you to approve a permission prompt — click Yes." -ForegroundColor Yellow
+    Write-Host "Node.js was not found - installing it now via winget." -ForegroundColor Yellow
+    Write-Host "Windows will likely ask you to approve a permission prompt - click Yes." -ForegroundColor Yellow
     try {
       Start-Process winget -ArgumentList @(
         'install', '--id', 'OpenJS.NodeJS.LTS', '-e',
@@ -47,7 +49,7 @@ if (-not $npm) {
 
 Write-Host "Node.js found: $(node --version)" -ForegroundColor Green
 
-# ── 2. Install dependencies ─────────────────────────────────────────
+# -- 2. Install dependencies --
 Write-Host ""
 Write-Host "Installing dependencies (this can take a minute)..." -ForegroundColor Cyan
 Push-Location $projectDir
@@ -56,12 +58,12 @@ $installExit = $LASTEXITCODE
 Pop-Location
 
 if ($installExit -ne 0) {
-  Write-Host "npm install failed — see the errors above." -ForegroundColor Red
+  Write-Host "npm install failed - see the errors above." -ForegroundColor Red
   Read-Host "Press Enter to close"
   exit 1
 }
 
-# ── 3. Create a desktop shortcut ────────────────────────────────────
+# -- 3. Create a desktop shortcut --
 Write-Host ""
 Write-Host "Creating desktop shortcut..." -ForegroundColor Cyan
 
@@ -80,7 +82,7 @@ $shortcut.Save()
 
 Write-Host "Shortcut created: $lnkPath" -ForegroundColor Green
 
-# ── 4. Wrap up ───────────────────────────────────────────────────────
+# -- 4. Wrap up --
 Write-Host ""
 Write-Host "Setup complete." -ForegroundColor Green
 Write-Host "Double-click 'Research Recruitment Dashboard' on the desktop to launch it."
@@ -89,6 +91,14 @@ Write-Host "Notes:" -ForegroundColor Cyan
 Write-Host " - The 'Email Patient' feature requires classic desktop Microsoft Outlook"
 Write-Host "   to be installed and signed in (not the new Outlook for Windows app)."
 Write-Host " - The first time you open the Google Voice and OneDrive panels, you'll"
-Write-Host "   need to sign in — this only has to be done once per computer."
+Write-Host "   need to sign in - this only has to be done once per computer."
 Write-Host ""
 Read-Host "Press Enter to close"
+
+} catch {
+  Write-Host ""
+  Write-Host "Setup hit an unexpected error:" -ForegroundColor Red
+  Write-Host $_.Exception.Message -ForegroundColor Red
+  Read-Host "Press Enter to close"
+  exit 1
+}

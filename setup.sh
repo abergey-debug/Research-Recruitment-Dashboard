@@ -9,28 +9,57 @@ echo
 # Homebrew's node install location isn't always on PATH in every shell context.
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
-if ! command -v npm >/dev/null 2>&1; then
-  echo "Node.js was not found - installing it now via Homebrew."
-
-  if ! command -v brew >/dev/null 2>&1; then
-    echo "Homebrew isn't installed either - installing it first."
-    echo "You'll be asked for your Mac password to authorize this."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || true
-
-    if [ -x /opt/homebrew/bin/brew ]; then
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    elif [ -x /usr/local/bin/brew ]; then
-      eval "$(/usr/local/bin/brew shellenv)"
+# Homebrew's plain "node" formula tracks the newest Current release, not a
+# stable LTS line - and that's been observed to break this project's old
+# Electron package: extract-zip silently dies partway through unpacking
+# Electron's binary on a too-new Node, with no error at all. Prefer a
+# pinned LTS formula instead. This only affects this script's own npm
+# install - once Electron's binary is actually extracted, the Node version
+# no longer matters, since Electron runs on its own bundled runtime from
+# then on.
+find_lts_node() {
+  for formula in node@24 node@22 node@20; do
+    local prefix
+    prefix="$(brew --prefix "$formula" 2>/dev/null)" || continue
+    if [ -x "$prefix/bin/node" ]; then
+      echo "$prefix/bin"
+      return 0
     fi
-  fi
+  done
+  return 1
+}
 
-  # Guarded with "|| true" so a failure here (e.g. no internet) falls through
-  # to the friendlier "could not be installed automatically" message below,
-  # instead of set -e aborting the script right here with just brew's own
-  # raw error output.
-  if command -v brew >/dev/null 2>&1; then
+if ! command -v brew >/dev/null 2>&1; then
+  echo "Homebrew isn't installed - installing it first (needed to get a stable Node.js version)."
+  echo "You'll be asked for your Mac password to authorize this."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || true
+
+  if [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [ -x /usr/local/bin/brew ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+fi
+
+NODE_BIN=""
+if command -v brew >/dev/null 2>&1; then
+  NODE_BIN="$(find_lts_node || true)"
+  if [ -z "$NODE_BIN" ]; then
+    echo "Installing a stable Node.js LTS release via Homebrew (this can take a minute)..."
+    brew install node@24 || true
+    NODE_BIN="$(find_lts_node || true)"
+  fi
+  if [ -z "$NODE_BIN" ]; then
+    # None of the pinned LTS formulas were available (e.g. Homebrew has
+    # moved on to newer version numbers) - fall back to whatever "node" is,
+    # better than failing outright even though it carries the original risk.
+    echo "No pinned Node.js LTS formula found - falling back to Homebrew's default node package."
     brew install node || true
   fi
+fi
+
+if [ -n "$NODE_BIN" ]; then
+  export PATH="$NODE_BIN:$PATH"
 fi
 
 if ! command -v npm >/dev/null 2>&1; then
@@ -49,11 +78,13 @@ if ! npm install; then
 fi
 
 # npm install can report success even though Electron's own postinstall step
-# failed to download its ~100MB platform binary (a flaky network/firewall
-# blocking the download is the usual cause) - leaving a broken half-installed
-# package that only fails later, when actually trying to launch the app.
-# Catch that here instead, since "require('electron')" exercises the exact
-# same lookup that fails at launch time.
+# failed to download and unpack its ~100MB platform binary - either a flaky
+# network/firewall blocking the download, or (as seen in practice) a too-new
+# Node version breaking extract-zip partway through with no visible error -
+# leaving a broken half-installed package that only fails later, when
+# actually trying to launch the app. Catch that here instead, since
+# "require('electron')" exercises the exact same lookup that fails at
+# launch time.
 echo
 echo "Verifying Electron installed correctly..."
 if ! node -e "require('electron')" >/dev/null 2>&1; then
@@ -63,8 +94,11 @@ if ! node -e "require('electron')" >/dev/null 2>&1; then
   if ! node -e "require('electron')" >/dev/null 2>&1; then
     echo
     echo "Electron still failed to install after a retry."
-    echo "This is almost always a network or firewall blocking the download from GitHub."
-    echo "Try a different network (or turn off any VPN) and run this setup again."
+    echo "This can be a network/firewall issue blocking the download from GitHub,"
+    echo "or (less commonly) this Node.js version ($(node --version)) being"
+    echo "incompatible with this old Electron package's install step. Try:"
+    echo "  brew install node@24 && export PATH=\"\$(brew --prefix node@24)/bin:\$PATH\""
+    echo "then run this setup again."
     exit 1
   fi
 fi

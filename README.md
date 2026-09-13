@@ -94,13 +94,22 @@ using desktop Outlook.
   then run setup again.
 - **"Electron failed to install correctly"** when launching the app:
   `npm install` can report success even though Electron's own
-  postinstall step silently failed to download its ~100MB platform
-  binary (usually a flaky network or firewall blocking the download from
-  GitHub). Setup already checks for and retries this automatically, but
-  if you hit it anyway, run this in a terminal in the project folder,
-  then run setup again:
-  - **Windows** (PowerShell): `Remove-Item -Recurse -Force node_modules, "$env:LOCALAPPDATA\electron\Cache"`
-  - **Mac**: `rm -rf node_modules "$HOME/Library/Caches/electron"`
+  postinstall step silently failed to download and unpack its ~100MB
+  platform binary. Setup already checks for this and retries once
+  automatically. Two known causes if it still fails:
+  - A flaky network/firewall blocking the download from GitHub — try a
+    different network or turn off any VPN.
+  - **Mac only, confirmed in practice**: Homebrew's plain `node` formula
+    installs the newest *Current* Node.js release rather than a stable
+    LTS line, and that's too new for this project's Electron version —
+    its unzip step (`extract-zip`) silently dies partway through with no
+    error. `setup.sh` already installs a pinned LTS formula (`node@24`)
+    to avoid this, but if you're troubleshooting manually, run:
+    `brew install node@24 && export PATH="$(brew --prefix node@24)/bin:$PATH"`
+    before `npm install`.
+  - To force a clean retry either way, clear the cache first:
+    - **Windows** (PowerShell): `Remove-Item -Recurse -Force node_modules, "$env:LOCALAPPDATA\electron\Cache"`
+    - **Mac**: `rm -rf node_modules "$HOME/Library/Caches/electron"`
 - **PDF viewer shows nothing**: make sure the selected file actually
   exists under `Research Files/Call Files/`.
 - **Mac: "cannot be opened because it is from an unidentified developer"**

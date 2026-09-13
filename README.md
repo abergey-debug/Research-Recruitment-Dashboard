@@ -8,7 +8,10 @@ using desktop Outlook.
 
 ## Requirements
 
-- **Node.js** (LTS) — [nodejs.org](https://nodejs.org)
+- **Node.js** (LTS) — the Windows setup script installs this automatically
+  if it's missing (via `winget`, with a permission prompt you'll need to
+  approve); on Mac you'll need to install it yourself first, from
+  [nodejs.org](https://nodejs.org) or `brew install node`.
 - **Windows**: classic desktop Microsoft Outlook, installed and signed in
   (the "Email Patient" button automates it directly — this does **not**
   work with the new Outlook for Windows app, which has no automation
@@ -19,22 +22,28 @@ using desktop Outlook.
 
 ### Windows
 
-1. Install [Node.js](https://nodejs.org) if it isn't already.
-2. Clone this repo (or download it as a folder).
-3. Double-click **`Setup.bat`**. It checks for Node.js, runs `npm install`,
-   and creates a **Research Recruitment Dashboard** shortcut on your
-   Desktop.
-4. Double-click that Desktop shortcut any time to launch the app.
+1. Get the code onto your computer — either:
+   - **Download**: on this repo's GitHub page, click the green **Code**
+     button → **Download ZIP**, then extract it, or
+   - **Clone**: `git clone` this repo, if you have git and a GitHub
+     account with access.
+2. Double-click **`Setup.bat`** in the extracted/cloned folder. It
+   installs Node.js if needed (approve the Windows permission prompt if
+   one appears), runs `npm install`, and creates a **Research Recruitment
+   Dashboard** shortcut on your Desktop.
+3. Double-click that Desktop shortcut any time to launch the app.
 
 ### Mac
 
 1. Install [Node.js](https://nodejs.org) if it isn't already (or
-   `brew install node`).
-2. Clone this repo (or download it as a folder).
-3. Open Terminal in the project folder and run `./setup.sh`. It checks
-   for Node.js, runs `npm install`, and puts a **Research Recruitment
-   Dashboard** app icon on your Desktop (a shortcut back into this
-   folder — don't move or delete the folder afterward).
+   `brew install node`) — the Mac setup script doesn't install it for you.
+2. Get the code onto your computer — either download this repo as a ZIP
+   from GitHub (green **Code** button → **Download ZIP**) and extract it,
+   or `git clone` it.
+3. Open Terminal in the project folder and run `./setup.sh`. It runs
+   `npm install` and puts a **Research Recruitment Dashboard** app icon
+   on your Desktop (a shortcut back into this folder — don't move or
+   delete the folder afterward).
 4. Double-click that Desktop icon any time to launch the app.
 
 ## First launch, either platform
@@ -49,12 +58,12 @@ using desktop Outlook.
 
 ## Updating
 
-Pull the latest changes, then re-run `npm install` in case dependencies
-changed:
-
-- **Windows**: open a terminal in the project folder and run `git pull`,
-  then re-run `Setup.bat` (safe to run again any time).
-- **Mac**: `git pull` in Terminal, then re-run `./setup.sh`.
+- **If you cloned with git**: run `git pull` in the project folder, then
+  re-run `Setup.bat` (Windows) or `./setup.sh` (Mac) in case dependencies
+  changed — both are safe to run again any time.
+- **If you downloaded a ZIP**: download a fresh ZIP from GitHub, extract
+  it over the old folder (or delete the old one first), then re-run
+  `Setup.bat` / `./setup.sh`.
 
 ## Project layout
 
@@ -74,7 +83,11 @@ changed:
 - **"Email Patient" opens Outlook 2016 / classic Outlook specifically**:
   expected on Windows — desktop automation only works through classic
   Outlook's COM interface, not the new Outlook for Windows app.
-- **Node.js not found** when running `Setup.bat`/`setup.sh`: install it
-  from [nodejs.org](https://nodejs.org), then run setup again.
+- **Node.js not found** when running `Setup.bat`: it tries to install
+  Node.js automatically via `winget` — approve the Windows permission
+  prompt when it appears. If that fails (older Windows without `winget`,
+  or the prompt was declined), install it manually from
+  [nodejs.org](https://nodejs.org), then run `Setup.bat` again. On Mac,
+  `setup.sh` always requires Node.js to already be installed.
 - **PDF viewer shows nothing**: make sure the selected file actually
   exists under `Research Files/Call Files/`.

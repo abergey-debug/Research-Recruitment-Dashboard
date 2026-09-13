@@ -12,7 +12,34 @@ if (-not $npm -and (Test-Path "$env:ProgramFiles\nodejs\npm.cmd")) {
 }
 
 if (-not $npm) {
-  Write-Host "Node.js was not found on this computer." -ForegroundColor Yellow
+  $winget = Get-Command winget -ErrorAction SilentlyContinue
+  if ($winget) {
+    Write-Host "Node.js was not found — installing it now via winget." -ForegroundColor Yellow
+    Write-Host "Windows will likely ask you to approve a permission prompt — click Yes." -ForegroundColor Yellow
+    try {
+      Start-Process winget -ArgumentList @(
+        'install', '--id', 'OpenJS.NodeJS.LTS', '-e',
+        '--accept-package-agreements', '--accept-source-agreements', '--silent'
+      ) -Verb RunAs -Wait -ErrorAction Stop
+    } catch {
+      Write-Host "The install prompt was declined or failed to launch." -ForegroundColor Yellow
+    }
+
+    # Installing doesn't update this already-running process's environment,
+    # so re-read PATH from the registry before checking again.
+    $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+    $userPath    = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    $env:Path = "$machinePath;$userPath"
+    $npm = Get-Command npm -ErrorAction SilentlyContinue
+    if (-not $npm -and (Test-Path "$env:ProgramFiles\nodejs\npm.cmd")) {
+      $env:Path = "$env:ProgramFiles\nodejs;$env:Path"
+      $npm = Get-Command npm -ErrorAction SilentlyContinue
+    }
+  }
+}
+
+if (-not $npm) {
+  Write-Host "Node.js could not be installed automatically." -ForegroundColor Yellow
   Write-Host "Install the LTS version from https://nodejs.org, then run this setup again."
   Read-Host "Press Enter to close"
   exit 1

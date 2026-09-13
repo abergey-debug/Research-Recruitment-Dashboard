@@ -1,5 +1,9 @@
 #!/bin/bash
-# Silent launcher for the .app bundle — runs with no visible Terminal window.
+# Silent launcher for the .app bundle - runs with no visible Terminal window.
+# Deliberately does NOT use "exec npm start" for the final launch: exec
+# replaces this process outright, so a failure inside npm start would have
+# nowhere to report to and the app would just silently fail to open with no
+# visible error - the same class of bug Setup.bat had on Windows.
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$DIR"
 
@@ -13,4 +17,9 @@ if ! command -v npm >/dev/null 2>&1; then
   exit 1
 fi
 
-exec npm start
+npm start
+status=$?
+if [ $status -ne 0 ]; then
+  osascript -e 'display alert "Research Recruitment Dashboard Failed to Start" message "Something went wrong launching the app. Open Terminal in this folder and run ./setup.sh to see the full error." as critical'
+fi
+exit $status

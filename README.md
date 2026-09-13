@@ -39,11 +39,13 @@ using desktop Outlook.
 1. Get the code onto your computer — either download this repo as a ZIP
    from GitHub (green **Code** button → **Download ZIP**) and extract it,
    or `git clone` it.
-2. Open Terminal in the project folder and run `./setup.sh`. It installs
-   Node.js if needed (via Homebrew — enter your Mac password if asked),
-   runs `npm install`, and puts a **Research Recruitment Dashboard** app
-   icon on your Desktop (a shortcut back into this folder — don't move or
-   delete the folder afterward).
+2. Double-click **`Setup.command`** in the extracted/cloned folder — this
+   opens Terminal automatically and runs the setup there (you'll see the
+   first-launch security warning described below the first time). It
+   installs Node.js if needed (via Homebrew — enter your Mac password if
+   asked), runs `npm install`, and puts a **Research Recruitment
+   Dashboard** app icon on your Desktop (a shortcut back into this folder
+   — don't move or delete the folder afterward).
 3. Double-click that Desktop icon any time to launch the app.
 
 ## First launch, either platform
@@ -59,11 +61,11 @@ using desktop Outlook.
 ## Updating
 
 - **If you cloned with git**: run `git pull` in the project folder, then
-  re-run `Setup.bat` (Windows) or `./setup.sh` (Mac) in case dependencies
-  changed — both are safe to run again any time.
+  re-run `Setup.bat` (Windows) or double-click `Setup.command` (Mac) in
+  case dependencies changed — both are safe to run again any time.
 - **If you downloaded a ZIP**: download a fresh ZIP from GitHub, extract
   it over the old folder (or delete the old one first), then re-run
-  `Setup.bat` / `./setup.sh`.
+  `Setup.bat` / `Setup.command`.
 
 ## Project layout
 
@@ -76,7 +78,8 @@ using desktop Outlook.
 - `Research Recruitment Dashboard.app` — Mac app bundle for a silent,
   no-console launch (used by the Desktop icon `setup.sh` creates)
 - `scripts/start.js` — cross-platform `npm start` entry point
-- `setup.ps1` / `setup.sh` — first-time setup scripts
+- `Setup.bat` / `Setup.command` — double-click setup entry points
+- `setup.ps1` / `setup.sh` — the actual setup scripts they run
 
 ## Troubleshooting
 
@@ -91,3 +94,12 @@ using desktop Outlook.
   then run setup again.
 - **PDF viewer shows nothing**: make sure the selected file actually
   exists under `Research Files/Call Files/`.
+- **Mac: "cannot be opened because it is from an unidentified developer"**
+  (or "Apple could not verify..."), the first time you double-click
+  `Setup.command`, `Launch Dashboard.command`, or the **Research
+  Recruitment Dashboard** app: expected — nothing here is code-signed by
+  an Apple Developer account. Right-click (or Control-click) the file →
+  **Open** → **Open** in the dialog that appears, instead of double-
+  clicking. You only need to do this once per file; after that it opens
+  normally. (If you don't see an Open option, check **System Settings →
+  Privacy & Security** for an "Open Anyway" button.)

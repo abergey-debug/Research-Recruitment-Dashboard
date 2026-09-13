@@ -10,10 +10,10 @@ echo
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 if ! command -v npm >/dev/null 2>&1; then
-  echo "Node.js was not found — installing it now via Homebrew."
+  echo "Node.js was not found - installing it now via Homebrew."
 
   if ! command -v brew >/dev/null 2>&1; then
-    echo "Homebrew isn't installed either — installing it first."
+    echo "Homebrew isn't installed either - installing it first."
     echo "You'll be asked for your Mac password to authorize this."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || true
 
@@ -24,8 +24,12 @@ if ! command -v npm >/dev/null 2>&1; then
     fi
   fi
 
+  # Guarded with "|| true" so a failure here (e.g. no internet) falls through
+  # to the friendlier "could not be installed automatically" message below,
+  # instead of set -e aborting the script right here with just brew's own
+  # raw error output.
   if command -v brew >/dev/null 2>&1; then
-    brew install node
+    brew install node || true
   fi
 fi
 
@@ -38,7 +42,11 @@ fi
 echo "Node.js found: $(node --version)"
 echo
 echo "Installing dependencies (this can take a minute)..."
-npm install
+if ! npm install; then
+  echo
+  echo "npm install failed - see the errors above."
+  exit 1
+fi
 
 echo
 echo "Creating a Desktop shortcut..."
@@ -52,4 +60,4 @@ echo "Notes:"
 echo " - The 'Email Patient' feature requires classic desktop Microsoft Outlook"
 echo "   to be installed and signed in."
 echo " - The first time you open the Google Voice and OneDrive panels, you'll"
-echo "   need to sign in — this only has to be done once per computer."
+echo "   need to sign in - this only has to be done once per computer."

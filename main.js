@@ -3,9 +3,10 @@ const path = require('path');
 const fs   = require('fs');
 const os   = require('os');
 const { execFile } = require('child_process');
+const { pathToFileURL } = require('url');
 
 const PDF_FOLDERS = [
-  path.join(os.homedir(), 'Research Recruitment Dashboard', 'Research Files', 'Call Files'),
+  path.join(__dirname, 'Research Files', 'Call Files'),
 ];
 
 function getPDFFiles() {
@@ -18,6 +19,7 @@ function getPDFFiles() {
       .map(f => ({
         name: f.replace(/\.pdf$/i, ''),
         path: path.join(folder, f),
+        url: pathToFileURL(path.join(folder, f)).href,
         folder: folderName,
       }));
     files.push(...pdfs);
@@ -56,6 +58,7 @@ function createWindow() {
     width: 1600,
     height: 950,
     title: 'Research Recruitment Dashboard',
+    icon: path.join(__dirname, 'app-icon.ico'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -98,7 +101,7 @@ app.whenReady().then(() => {
   ipcMain.handle('get-pdf-files', () => getPDFFiles());
 
   ipcMain.handle('open-folder', () => {
-    shell.openPath(path.join(os.homedir(), 'Research Recruitment Dashboard', 'Research Files'));
+    shell.openPath(path.join(__dirname, 'Research Files'));
   });
 
   ipcMain.handle('scan-onedrive', () => {
@@ -110,7 +113,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('send-email', (e, { to, name }) => {
-    const emailDir = path.join(os.homedir(), 'Research Recruitment Dashboard', 'Research Files', 'Email Files');
+    const emailDir = path.join(__dirname, 'Research Files', 'Email Files');
     const firstName = (name || '').split(' ')[0] || 'there';
     const attachments = [
       path.join(emailDir, 'Participant_FAQ_English.pdf'),
@@ -118,16 +121,47 @@ app.whenReady().then(() => {
       path.join(emailDir, 'Trifold_Brochure_English.pdf'),
     ];
 
-    const attachLines = attachments
-      .map(f => `make new attachment at newMsg with properties {file:POSIX file "${f}"}`)
-      .join('\n  ');
-
     const htmlBody = [
       `<p>${firstName},</p>`,
       `<p>Thank you for your interest in PREVENTABLE!&nbsp; It was a pleasure connecting with you today.&nbsp; I've attached the consent documents for the study as they contain comprehensive information on how it operates, expectations for participants, and associated risks.&nbsp; <b>Please note that these are purely for your review; if you choose to move forward with participating we would formally complete them at a later time.</b></p>`,
       `<p>If you have any questions or concerns, or you would like to proceed with scheduling a meeting to enroll, feel free to reply to this email or give me a call at 770-330-7790.&nbsp; I would also recommend you visit the PREVENTABLE website (<a href='https://preventabletrial.org/home.cfm'>https://preventabletrial.org/home.cfm</a>) and register for one of their weekly webinars; they are an excellent source of information.</p>`,
       `<p>Best,</p>`,
     ].join('');
+
+    if (process.platform === 'win32') {
+      // Windows has no AppleScript/Microsoft Outlook scripting bridge, so drive
+      // desktop Outlook through its COM object model instead, via PowerShell.
+      const psQuote = (str) => `'${String(str).replace(/'/g, "''")}'`;
+
+      const script = [
+        '$outlook = New-Object -ComObject Outlook.Application',
+        '$mail = $outlook.CreateItem(0)',
+        `$mail.Subject = ${psQuote('PREVENTABLE Trial - Study Information')}`,
+        `$mail.HTMLBody = ${psQuote(htmlBody)}`,
+        `$mail.To = ${psQuote(to)}`,
+        ...attachments.map(f => `$mail.Attachments.Add(${psQuote(f)})`),
+        '$mail.Display()',
+      ].join('\r\n');
+
+      const tmpScript = path.join(os.tmpdir(), 'preventable_email.ps1');
+      fs.writeFileSync(tmpScript, script, 'utf8');
+
+      return new Promise((resolve) => {
+        // -Sta: Outlook's COM interop requires a single-threaded apartment.
+        execFile('powershell.exe', [
+          '-NoProfile', '-NonInteractive', '-Sta',
+          '-ExecutionPolicy', 'Bypass',
+          '-File', tmpScript,
+        ], (err, stdout, stderr) => {
+          if (err) resolve({ error: stderr?.toString().trim() || err.message });
+          else resolve({ success: true });
+        });
+      });
+    }
+
+    const attachLines = attachments
+      .map(f => `make new attachment at newMsg with properties {file:POSIX file "${f}"}`)
+      .join('\n  ');
 
     // AppleScript doesn't support backslash escapes — split on any double quotes and rejoin with & quote &
     const asHtml = '"' + htmlBody.replace(/"/g, '" & quote & "') + '"';

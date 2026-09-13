@@ -4,13 +4,18 @@
   "description": "Research Recruitment Dashboard",
   "main": "main.js",
   "scripts": {
-    "start": "ELECTRON_RUN_AS_NODE= electron .",
-    "build": "electron-packager . 'Research Recruitment Dashboard' --platform=darwin --arch=arm64 --out=dist --overwrite --ignore='dist|\\.git|Launch Dashboard\\.command'"
+    "start": "node scripts/start.js",
+    "build:mac": "electron-packager . \"Research Recruitment Dashboard\" --platform=darwin --arch=arm64 --out=dist --overwrite --ignore=\"dist|\\.git|Launch Dashboard\\.(command|bat)\"",
+    "build:win": "electron-packager . \"Research Recruitment Dashboard\" --platform=win32 --arch=x64 --icon=app-icon.ico --out=dist --overwrite --ignore=\"dist|\\.git|Launch Dashboard\\.(command|bat)\"",
+    "build": "electron-packager . \"Research Recruitment Dashboard\" --platform=win32 --arch=x64 --icon=app-icon.ico --out=dist --overwrite --ignore=\"dist|\\.git|Launch Dashboard\\.(command|bat)\""
   },
   "dependencies": {
     "electron": "^25.9.8"
   },
   "devDependencies": {
     "electron-packager": "^17.1.2"
+  },
+  "allowScripts": {
+    "electron@25.9.8": true
   }
 }

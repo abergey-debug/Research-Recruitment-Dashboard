@@ -48,6 +48,28 @@ if ! npm install; then
   exit 1
 fi
 
+# npm install can report success even though Electron's own postinstall step
+# failed to download its ~100MB platform binary (a flaky network/firewall
+# blocking the download is the usual cause) - leaving a broken half-installed
+# package that only fails later, when actually trying to launch the app.
+# Catch that here instead, since "require('electron')" exercises the exact
+# same lookup that fails at launch time.
+echo
+echo "Verifying Electron installed correctly..."
+if ! node -e "require('electron')" >/dev/null 2>&1; then
+  echo "Electron's binary looks broken - clearing its cache and retrying the download..."
+  rm -rf node_modules/electron "$HOME/Library/Caches/electron"
+  npm install electron --no-save || true
+  if ! node -e "require('electron')" >/dev/null 2>&1; then
+    echo
+    echo "Electron still failed to install after a retry."
+    echo "This is almost always a network or firewall blocking the download from GitHub."
+    echo "Try a different network (or turn off any VPN) and run this setup again."
+    exit 1
+  fi
+fi
+echo "Electron OK."
+
 echo
 echo "Creating a Desktop shortcut..."
 ln -sf "$DIR/Research Recruitment Dashboard.app" "$HOME/Desktop/Research Recruitment Dashboard.app"

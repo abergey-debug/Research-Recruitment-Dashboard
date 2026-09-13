@@ -63,6 +63,50 @@ if ($installExit -ne 0) {
   exit 1
 }
 
+# npm install can report success even though Electron's own postinstall step
+# failed to download its platform binary (a flaky network/firewall blocking
+# the download is the usual cause) - leaving a broken half-installed package
+# that only fails later, when actually trying to launch the app. Catch that
+# here instead, since "require('electron')" exercises the exact same lookup
+# that fails at launch time.
+#
+# Note: don't redirect this native command's stderr (e.g. "2>$null") under
+# $ErrorActionPreference = 'Stop' - PowerShell 5.1 wraps each redirected
+# stderr line as a NativeCommandError, which then becomes a terminating
+# error under 'Stop' and gets swallowed by the outer try/catch instead of
+# being handled here. Wrapping the call itself in try/catch sidesteps that.
+function Test-ElectronOk {
+  try {
+    & node -e "require('electron')" *>$null
+    return ($LASTEXITCODE -eq 0)
+  } catch {
+    return $false
+  }
+}
+
+Write-Host ""
+Write-Host "Verifying Electron installed correctly..." -ForegroundColor Cyan
+Push-Location $projectDir
+$electronOk = Test-ElectronOk
+if (-not $electronOk) {
+  Write-Host "Electron's binary looks broken - clearing its cache and retrying the download..." -ForegroundColor Yellow
+  Remove-Item -Recurse -Force "node_modules\electron" -ErrorAction SilentlyContinue
+  Remove-Item -Recurse -Force "$env:LOCALAPPDATA\electron\Cache" -ErrorAction SilentlyContinue
+  & npm install electron --no-save
+  $electronOk = Test-ElectronOk
+}
+Pop-Location
+
+if (-not $electronOk) {
+  Write-Host ""
+  Write-Host "Electron still failed to install after a retry." -ForegroundColor Red
+  Write-Host "This is almost always a network or firewall blocking the download from GitHub."
+  Write-Host "Try a different network (or turn off any VPN) and run this setup again."
+  Read-Host "Press Enter to close"
+  exit 1
+}
+Write-Host "Electron OK." -ForegroundColor Green
+
 # -- 3. Create a desktop shortcut --
 Write-Host ""
 Write-Host "Creating desktop shortcut..." -ForegroundColor Cyan

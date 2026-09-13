@@ -92,6 +92,15 @@ using desktop Outlook.
   (older Windows without `winget`, no internet access, or the prompt was
   declined), install it manually from [nodejs.org](https://nodejs.org),
   then run setup again.
+- **"Electron failed to install correctly"** when launching the app:
+  `npm install` can report success even though Electron's own
+  postinstall step silently failed to download its ~100MB platform
+  binary (usually a flaky network or firewall blocking the download from
+  GitHub). Setup already checks for and retries this automatically, but
+  if you hit it anyway, run this in a terminal in the project folder,
+  then run setup again:
+  - **Windows** (PowerShell): `Remove-Item -Recurse -Force node_modules, "$env:LOCALAPPDATA\electron\Cache"`
+  - **Mac**: `rm -rf node_modules "$HOME/Library/Caches/electron"`
 - **PDF viewer shows nothing**: make sure the selected file actually
   exists under `Research Files/Call Files/`.
 - **Mac: "cannot be opened because it is from an unidentified developer"**

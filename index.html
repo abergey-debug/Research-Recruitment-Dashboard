@@ -697,6 +697,28 @@
     .back-btn:hover { background: #d0e1fb; }
     .back-btn svg { width: 12px; height: 12px; }
 
+    /* Header button that opens Google Voice without needing a patient loaded */
+    .gv-header-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: auto;
+      background: #e8f0fe;
+      border: none;
+      border-left: 1px solid #d0daea;
+      color: #012169;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 0 12px;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: background 0.12s;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .gv-header-btn:hover { background: #d0e1fb; }
+    .gv-header-btn iconify-icon { font-size: 13px; }
+
     /* Zoom controls */
     .zoom-controls {
       display: flex;
@@ -898,6 +920,9 @@
       <div id="patient-panel" style="flex: 1 1 auto;">
         <div class="panel-header">
           <span class="panel-label">Patient Info</span>
+          <button class="gv-header-btn" id="voice-panel-toggle-btn-top" title="Show or hide the Google Voice panel — no patient needs to be loaded, so you can sign in first">
+            <iconify-icon icon="mdi:eye-outline"></iconify-icon>Show Google Voice
+          </button>
           <button class="refresh-btn" id="refresh-scan" title="Scan screen">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="2" width="4" height="4" rx="0.5"/>
@@ -1107,7 +1132,12 @@
       // A trailing unique param keeps the URL different every time (e.g. on
       // Reload) — setting src to a URL that's already loaded is a no-op in
       // most browsers, so a real reload wouldn't otherwise happen at all.
-      pdfEmbed.src = 'file://' + encodeURI(file.path) + '#zoom=100&r=' + Date.now();
+      //
+      // file.url is built in the main process with Node's pathToFileURL,
+      // since hand-rolling a file:// URL from a raw path breaks on Windows
+      // (backslashes need converting to slashes and a drive letter needs an
+      // extra leading slash) — pathToFileURL handles both platforms.
+      pdfEmbed.src = file.url + '#zoom=100&r=' + Date.now();
     }
 
     // ── Back buttons ──────────────────────────────────────────────
@@ -1976,6 +2006,7 @@
     // so there's no need to look at the raw Google Voice page day-to-day.
     const voiceSubpanel      = document.getElementById('voice-subpanel');
     const voicePanelToggleBtn = document.getElementById('voice-panel-toggle-btn');
+    const voicePanelToggleBtnTop = document.getElementById('voice-panel-toggle-btn-top');
     let voicePanelHidden = true;
 
     function setVoicePanelHidden(hidden) {
@@ -1983,12 +2014,15 @@
       voiceSubpanel.style.display = hidden ? 'none' : 'flex';
       resizeH.style.display = hidden ? 'none' : 'block';
       patientPanel.style.flex = hidden ? '1 1 auto' : '0 0 50%';
-      voicePanelToggleBtn.innerHTML = hidden
+      const label = hidden
         ? '<iconify-icon icon="mdi:eye-outline"></iconify-icon>Show Google Voice'
         : '<iconify-icon icon="mdi:eye-off-outline"></iconify-icon>Hide Google Voice';
+      voicePanelToggleBtn.innerHTML = label;
+      voicePanelToggleBtnTop.innerHTML = label;
     }
 
     voicePanelToggleBtn.addEventListener('click', () => setVoicePanelHidden(!voicePanelHidden));
+    voicePanelToggleBtnTop.addEventListener('click', () => setVoicePanelHidden(!voicePanelHidden));
 
     // ── Route new-window URLs into the correct panel ──────────────
     window.api.onOpenInPanel((url) => {

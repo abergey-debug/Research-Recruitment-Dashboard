@@ -1,0 +1,16 @@
+#!/bin/bash
+# Silent launcher for the .app bundle — runs with no visible Terminal window.
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+cd "$DIR"
+
+# GUI-launched apps on macOS don't source .zshrc/.bash_profile, so Homebrew's
+# node install (or a manually-downloaded one) may not be on PATH here even
+# though it works fine from Terminal.
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+if ! command -v npm >/dev/null 2>&1; then
+  osascript -e 'display alert "Node.js Not Found" message "Install Node.js from nodejs.org, then try opening this again." as critical'
+  exit 1
+fi
+
+exec npm start

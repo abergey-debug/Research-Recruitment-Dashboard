@@ -1602,6 +1602,14 @@
       }, 250);
     });
 
+    // Hotkey (caught in main.js so it works even while focus is inside
+    // the Google Voice panel) — same as clicking Play/Stop.
+    const PLAY_HOTKEY_LABEL = window.api.platform === 'darwin' ? '⌘⇧P' : 'Ctrl+Shift+P';
+    voicemailPlayBtn.title += ` (${PLAY_HOTKEY_LABEL})`;
+    window.api.onToggleVoicemailPlay(() => {
+      if (!voicemailPlayBtn.disabled) voicemailPlayBtn.click();
+    });
+
     voicemailMuteBtn.addEventListener('click', () => setMicMuted(!micMuted));
 
     async function hangUpCall() {

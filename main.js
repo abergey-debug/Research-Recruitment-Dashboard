@@ -53,6 +53,24 @@ function readVoicemailMessage() {
 }
 
 
+// ── Hotkey: Cmd+Shift+P (Mac) / Ctrl+Shift+P (Windows) plays/stops the
+// voicemail message. Caught via before-input-event on the main window AND
+// every webview, since a keydown listener in index.html never sees keys
+// pressed while focus is inside the Google Voice/OneDrive panels.
+function isPlayHotkey(input) {
+  const mod = process.platform === 'darwin' ? input.meta : input.control;
+  return input.type === 'keyDown' && !input.isAutoRepeat && mod && input.shift
+    && !input.alt && input.code === 'KeyP';
+}
+
+function attachPlayHotkey(wc) {
+  wc.on('before-input-event', (event, input) => {
+    if (!isPlayHotkey(input)) return;
+    event.preventDefault();
+    if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('toggle-voicemail-play');
+  });
+}
+
 function createWindow() {
   mainWin = new BrowserWindow({
     width: 1600,
@@ -68,10 +86,12 @@ function createWindow() {
   });
 
   mainWin.loadFile('index.html');
+  attachPlayHotkey(mainWin.webContents);
 
   mainWin.webContents.on('did-attach-webview', (event, wc) => {
     webviewContents.set(wc.id, wc);
     wc.on('destroyed', () => webviewContents.delete(wc.id));
+    attachPlayHotkey(wc);
     // The Google Voice panel is hidden (display:none) by default now, and
     // Chromium throttles JS timers in backgrounded/hidden pages to save
     // resources — which can interfere with an active WebRTC call's own

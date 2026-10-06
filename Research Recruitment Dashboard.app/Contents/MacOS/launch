@@ -20,6 +20,18 @@ fi
 # though it works fine from Terminal.
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
+# setup.sh installs a pinned LTS formula (node@24 etc.), which Homebrew
+# keeps "keg-only" - NOT linked into /opt/homebrew/bin - so add its bin
+# folder directly. Same preference order as setup.sh's find_lts_node.
+for formula in node@24 node@22 node@20; do
+  for opt in /opt/homebrew/opt /usr/local/opt; do
+    if [ -x "$opt/$formula/bin/npm" ]; then
+      export PATH="$opt/$formula/bin:$PATH"
+      break 2
+    fi
+  done
+done
+
 if ! command -v npm >/dev/null 2>&1; then
   osascript -e 'display alert "Node.js Not Found" message "Install Node.js from nodejs.org, then try opening this again." as critical'
   exit 1

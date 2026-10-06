@@ -7,6 +7,14 @@
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$DIR"
 
+# A quarantined (freshly downloaded) .app is run from a read-only copy under
+# /private/var/.../AppTranslocation/, where the project folder isn't. Say so
+# instead of failing with a generic error.
+if [[ "$DIR" == */AppTranslocation/* ]] || [ ! -f "$DIR/package.json" ]; then
+  osascript -e 'display alert "Run Setup First" message "macOS is blocking this app from finding its project folder (it was downloaded from the internet). Double-click Setup.command in the project folder once, then open the app again." as critical'
+  exit 1
+fi
+
 # GUI-launched apps on macOS don't source .zshrc/.bash_profile, so Homebrew's
 # node install (or a manually-downloaded one) may not be on PATH here even
 # though it works fine from Terminal.

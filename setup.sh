@@ -104,6 +104,14 @@ if ! node -e "require('electron')" >/dev/null 2>&1; then
 fi
 echo "Electron OK."
 
+# Files extracted from a downloaded ZIP carry macOS's quarantine flag. A
+# quarantined .app gets "App Translocated" - run from a random read-only
+# copy elsewhere on disk - so its launcher can't find this project folder
+# and the app fails to start. Clearing the flag here prevents that.
+echo
+echo "Clearing macOS download quarantine flags..."
+xattr -dr com.apple.quarantine "$DIR" 2>/dev/null || true
+
 echo
 echo "Creating a Desktop shortcut..."
 ln -sf "$DIR/Research Recruitment Dashboard.app" "$HOME/Desktop/Research Recruitment Dashboard.app"

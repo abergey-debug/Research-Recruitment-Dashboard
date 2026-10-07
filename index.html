@@ -872,7 +872,7 @@
           <span class="zoom-pct" id="zoom-od-pct">100%</span>
           <button class="zoom-btn" id="zoom-od-in"  title="Zoom in">+</button>
         </div>
-        <button class="refresh-btn" id="refresh-onedrive" title="Reload OneDrive">
+        <button class="refresh-btn" id="refresh-onedrive" title="Back to the OneDrive home page">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M13.5 8A5.5 5.5 0 1 1 10 3.07"/>
             <polyline points="10 1 10 4 13 4"/>
@@ -1711,8 +1711,14 @@
       const idx = parseInt(pdfSelect.value, 10);
       if (!Number.isNaN(idx)) selectPDF(idx, true);
     });
+    // Failsafe: always goes back to the OneDrive home page rather than
+    // reloading the current page — a plain reload just re-broke the panel
+    // when it was stuck somewhere (e.g. after clicking Home inside Excel).
+    const ONEDRIVE_HOME_URL = document.getElementById('onedrive-view').getAttribute('src');
     document.getElementById('refresh-onedrive').addEventListener('click', () => {
-      document.getElementById('onedrive-view').reload();
+      const view = document.getElementById('onedrive-view');
+      view.stop();
+      view.loadURL(ONEDRIVE_HOME_URL).catch(() => {}); // rejects harmlessly if a redirect interrupts it
     });
     document.getElementById('refresh-voice').addEventListener('click', () => {
       document.getElementById('voice-view').reload();

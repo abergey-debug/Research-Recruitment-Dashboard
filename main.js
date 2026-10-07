@@ -71,6 +71,44 @@ function attachPlayHotkey(wc) {
   });
 }
 
+// ── Email greeting ──
+// Spreadsheet names come as either "Last, First" or "First Last", sometimes
+// in ALL CAPS. With a SEX/GENDER column: "Dear Mr. Doe," / "Dear Ms. Doe,".
+// Without one there's no safe way to pick a title, so: "Dear John Doe,".
+function tidyNamePart(word) {
+  if (word !== word.toUpperCase() && word !== word.toLowerCase()) return word; // already mixed case
+  return word.toLowerCase().replace(/(^|[-'’])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
+}
+
+function splitPatientName(name) {
+  const raw = String(name || '').split('\n')[0].trim();
+  if (!raw) return { first: '', last: '' };
+  let first = '', last = '';
+  if (raw.includes(',')) {
+    const [lastPart, ...rest] = raw.split(',');
+    last  = lastPart.trim();
+    first = rest.join(' ').trim().split(/\s+/)[0] || '';
+  } else {
+    const parts = raw.split(/\s+/);
+    first = parts[0];
+    last  = parts.length > 1 ? parts[parts.length - 1] : '';
+  }
+  return {
+    first: first.split(/\s+/).map(tidyNamePart).join(' '),
+    last:  last.split(/\s+/).map(tidyNamePart).join(' '),
+  };
+}
+
+function buildEmailGreeting(name, sex) {
+  const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const { first, last } = splitPatientName(name);
+  const s = String(sex || '').trim().toLowerCase();
+  const title = /^(m|male|man)$/.test(s) ? 'Mr.' : /^(f|female|woman)$/.test(s) ? 'Ms.' : '';
+  if (title && last) return `Dear ${title} ${esc(last)},`;
+  const full = [first, last].filter(Boolean).join(' ');
+  return full ? `Dear ${esc(full)},` : 'Hello,';
+}
+
 function createWindow() {
   mainWin = new BrowserWindow({
     width: 1600,
@@ -132,20 +170,26 @@ app.whenReady().then(() => {
     return { text };
   });
 
-  ipcMain.handle('send-email', (e, { to, name }) => {
+  ipcMain.handle('send-email', (e, { to, name, sex }) => {
     const emailDir = path.join(__dirname, 'Research Files', 'Email Files');
-    const firstName = (name || '').split(' ')[0] || 'there';
+    const greeting = buildEmailGreeting(name, sex);
     const attachments = [
       path.join(emailDir, 'Participant_FAQ_English.pdf'),
       path.join(emailDir, 'PREVENTABLE_Non-VA_Sites_ICF_Part 1.pdf'),
       path.join(emailDir, 'Trifold_Brochure_English.pdf'),
     ];
 
+    // <div>s with explicit blank-line spacers rather than <p>s: Outlook gives
+    // <p> a top margin, which showed up as an empty line above the greeting.
+    const BLANK = '<div><br></div>';
     const htmlBody = [
-      `<p>${firstName},</p>`,
-      `<p>Thank you for your interest in PREVENTABLE!&nbsp; It was a pleasure connecting with you today.&nbsp; I've attached the consent documents for the study as they contain comprehensive information on how it operates, expectations for participants, and associated risks.&nbsp; <b>Please note that these are purely for your review; if you choose to move forward with participating we would formally complete them at a later time.</b></p>`,
-      `<p>If you have any questions or concerns, or you would like to proceed with scheduling a meeting to enroll, feel free to reply to this email or give me a call at 770-330-7790.&nbsp; I would also recommend you visit the PREVENTABLE website (<a href='https://preventabletrial.org/home.cfm'>https://preventabletrial.org/home.cfm</a>) and register for one of their weekly webinars; they are an excellent source of information.</p>`,
-      `<p>Best,</p>`,
+      `<div>${greeting}</div>`,
+      BLANK,
+      `<div>Thank you for your interest in PREVENTABLE!&nbsp; It was a pleasure connecting with you today.&nbsp; I've attached the consent documents for the study as they contain comprehensive information on how it operates, expectations for participants, and associated risks.&nbsp; <b>Please note that these are purely for your review; if you choose to move forward with participating we would formally complete them at a later time.</b></div>`,
+      BLANK,
+      `<div>If you have any questions or concerns, or you would like to proceed with scheduling a meeting to enroll, feel free to reply to this email or give me a call at 770-330-7790.&nbsp; I would also recommend you visit the PREVENTABLE website (<a href='https://preventabletrial.org/home.cfm'>https://preventabletrial.org/home.cfm</a>) and register for one of their weekly webinars; they are an excellent source of information.</div>`,
+      BLANK,
+      `<div>Best,</div>`,
     ].join('');
 
     if (process.platform === 'win32') {

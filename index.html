@@ -1842,7 +1842,7 @@
       const rows = parseTSV(text);
 
       // Find the header row with FULL NAME, CELL #, HOME #, and EMAIL
-      let nameCol = -1, cellCol = -1, homeCol = -1, emailCol = -1, headerIdx = -1;
+      let nameCol = -1, cellCol = -1, homeCol = -1, emailCol = -1, sexCol = -1, headerIdx = -1;
       for (let i = 0; i < rows.length; i++) {
         const upper = rows[i].map(c => c.trim().toUpperCase());
         const ni = upper.findIndex(c => c === 'FULL NAME' || c === 'FULLNAME' || c === 'NAME');
@@ -1851,6 +1851,8 @@
         const ei = upper.findIndex(c => c.includes('EMAIL') || c.includes('E-MAIL') || c.includes('MAIL'));
         if (ni !== -1 || ci !== -1) {
           nameCol = ni; cellCol = ci; homeCol = hi; emailCol = ei; headerIdx = i;
+          // Optional — only used to pick Mr./Ms. in the email greeting
+          sexCol = upper.findIndex(c => c === 'SEX' || c === 'GENDER' || c.includes('GENDER'));
           break;
         }
       }
@@ -1867,8 +1869,9 @@
           const phone    = cellCol >= 0 ? (row[cellCol] || '').trim() : null;
           const home     = homeCol >= 0 ? (row[homeCol] || '').trim() : null;
           const email    = emailCol >= 0 ? (row[emailCol] || '').trim() : null;
+          const sex      = sexCol >= 0 ? (row[sexCol] || '').trim() : null;
 
-          if (name || phone || home) patients.push({ name, phone: phone || null, home: home || null, email: email || null });
+          if (name || phone || home) patients.push({ name, phone: phone || null, home: home || null, email: email || null, sex: sex || null });
         }
       }
 
@@ -1915,7 +1918,7 @@
 
     async function emailPatient(p) {
       const to = (p.email || '').trim();
-      const result = await window.api.sendEmail({ to, name: p.name || '' });
+      const result = await window.api.sendEmail({ to, name: p.name || '', sex: p.sex || '' });
       if (result && result.error) {
         alert(`Could not open Mail: ${result.error}`);
       }

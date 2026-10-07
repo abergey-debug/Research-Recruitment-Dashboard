@@ -1921,6 +1921,8 @@
       const result = await window.api.sendEmail({ to, name: p.name || '', sex: p.sex || '' });
       if (result && result.error) {
         alert(`Could not open Mail: ${result.error}`);
+      } else if (result && result.warning) {
+        alert(result.warning);
       }
     }
 

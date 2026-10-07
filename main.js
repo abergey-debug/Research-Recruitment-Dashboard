@@ -4,6 +4,7 @@ const fs   = require('fs');
 const os   = require('os');
 const { execFile } = require('child_process');
 const { pathToFileURL } = require('url');
+const { loadEmailTemplate, fillPlaceholders, toAsciiHtml, listAttachments } = require('./email-template');
 
 const PDF_FOLDERS = [
   path.join(__dirname, 'Research Files', 'Call Files'),
@@ -171,26 +172,18 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('send-email', (e, { to, name, sex }) => {
+    // The email text and attachments are editable files, not code - see
+    // email-template.js. Re-read on every click so edits apply immediately.
     const emailDir = path.join(__dirname, 'Research Files', 'Email Files');
-    const greeting = buildEmailGreeting(name, sex);
-    const attachments = [
-      path.join(emailDir, 'Participant_FAQ_English.pdf'),
-      path.join(emailDir, 'PREVENTABLE_Non-VA_Sites_ICF_Part 1.pdf'),
-      path.join(emailDir, 'Trifold_Brochure_English.pdf'),
-    ];
+    const { first, last } = splitPatientName(name);
+    const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const values = { greeting: buildEmailGreeting(name, sex), first: esc(first), last: esc(last) };
 
-    // <div>s with explicit blank-line spacers rather than <p>s: Outlook gives
-    // <p> a top margin, which showed up as an empty line above the greeting.
-    const BLANK = '<div><br></div>';
-    const htmlBody = [
-      `<div>${greeting}</div>`,
-      BLANK,
-      `<div>Thank you for your interest in PREVENTABLE!&nbsp; It was a pleasure connecting with you today.&nbsp; I've attached the consent documents for the study as they contain comprehensive information on how it operates, expectations for participants, and associated risks.&nbsp; <b>Please note that these are purely for your review; if you choose to move forward with participating we would formally complete them at a later time.</b></div>`,
-      BLANK,
-      `<div>If you have any questions or concerns, or you would like to proceed with scheduling a meeting to enroll, feel free to reply to this email or give me a call at 770-330-7790.&nbsp; I would also recommend you visit the PREVENTABLE website (<a href='https://preventabletrial.org/home.cfm'>https://preventabletrial.org/home.cfm</a>) and register for one of their weekly webinars; they are an excellent source of information.</div>`,
-      BLANK,
-      `<div>Best,</div>`,
-    ].join('');
+    const template = loadEmailTemplate(emailDir);
+    const htmlBody = toAsciiHtml(fillPlaceholders(template.html, values));
+    const subject  = fillPlaceholders(template.subject, { ...values, greeting: '' }).trim();
+    const attachments = listAttachments(emailDir);
+    const done = (result) => (template.warning && !result.error ? { ...result, warning: template.warning } : result);
 
     if (process.platform === 'win32') {
       // Windows has no AppleScript/Microsoft Outlook scripting bridge, so drive
@@ -200,7 +193,7 @@ app.whenReady().then(() => {
       const script = [
         '$outlook = New-Object -ComObject Outlook.Application',
         '$mail = $outlook.CreateItem(0)',
-        `$mail.Subject = ${psQuote('PREVENTABLE Trial - Study Information')}`,
+        `$mail.Subject = ${psQuote(subject)}`,
         `$mail.HTMLBody = ${psQuote(htmlBody)}`,
         `$mail.To = ${psQuote(to)}`,
         ...attachments.map(f => `$mail.Attachments.Add(${psQuote(f)})`),
@@ -208,7 +201,8 @@ app.whenReady().then(() => {
       ].join('\r\n');
 
       const tmpScript = path.join(os.tmpdir(), 'preventable_email.ps1');
-      fs.writeFileSync(tmpScript, script, 'utf8');
+      // BOM so Windows PowerShell reads a non-ASCII subject line as UTF-8
+      fs.writeFileSync(tmpScript, '\ufeff' + script, 'utf8');
 
       return new Promise((resolve) => {
         // -Sta: Outlook's COM interop requires a single-threaded apartment.
@@ -218,17 +212,18 @@ app.whenReady().then(() => {
           '-File', tmpScript,
         ], (err, stdout, stderr) => {
           if (err) resolve({ error: stderr?.toString().trim() || err.message });
-          else resolve({ success: true });
+          else resolve(done({ success: true }));
         });
       });
     }
 
-    const attachLines = attachments
-      .map(f => `make new attachment at newMsg with properties {file:POSIX file "${f}"}`)
-      .join('\n  ');
-
     // AppleScript doesn't support backslash escapes — split on any double quotes and rejoin with & quote &
-    const asHtml = '"' + htmlBody.replace(/"/g, '" & quote & "') + '"';
+    const asQuote = (str) => '("' + String(str).replace(/"/g, '" & quote & "') + '")';
+    const asHtml = asQuote(htmlBody);
+
+    const attachLines = attachments
+      .map(f => `make new attachment at newMsg with properties {file:POSIX file ${asQuote(f)}}`)
+      .join('\n  ');
 
     const script = `if application "Microsoft Outlook" is not running then
   tell application "Microsoft Outlook" to launch
@@ -240,9 +235,9 @@ end if
 
 tell application "Microsoft Outlook"
   activate
-  set newMsg to make new outgoing message with properties {subject:"PREVENTABLE Trial - Study Information"}
+  set newMsg to make new outgoing message with properties {subject:${asQuote(subject)}}
   set content of newMsg to ${asHtml}
-  make new recipient at newMsg with properties {email address:{address:"${to}"}}
+  make new recipient at newMsg with properties {email address:{address:${asQuote(to)}}}
   ${attachLines}
   open newMsg
   activate
@@ -254,7 +249,7 @@ end tell`;
     return new Promise((resolve) => {
       execFile('osascript', [tmpScript], (err) => {
         if (err) resolve({ error: err.message });
-        else resolve({ success: true });
+        else resolve(done({ success: true }));
       });
     });
   });

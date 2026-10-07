@@ -1,0 +1,22 @@
+HOW TO EDIT THE PATIENT EMAIL
+=============================
+
+THE EMAIL TEXT
+  Open "Email Template.docx" in Word, edit it, and save. The next time you
+  click a patient's email button, the app uses the new text - no restart
+  needed.
+
+  - The first line, "Subject: ...", is the email's subject line.
+  - {greeting} becomes "Dear John Doe," (or "Dear Mr. Doe," / "Dear Ms. Doe,"
+    when the rows you copied from Excel include a SEX or GENDER column).
+  - You can also use {first} and {last} for the patient's first/last name.
+  - Bold, italics, underline, and links carry over into the email.
+    Fonts, colors, text sizes, tables, and pictures do not - the email
+    uses Outlook's normal font.
+  - Keep the file's name and location exactly as they are.
+  - Your signature is not part of the template. Outlook adds it.
+
+THE ATTACHMENTS
+  Every file in the "Attachments" folder is attached to the email.
+  To change what gets sent, add, remove, or replace files in that folder.
+  An empty folder means no attachments.

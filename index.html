@@ -96,6 +96,32 @@
     .folder-btn:hover { background: rgba(242,169,0,0.28); border-color: #f2a900; }
     .folder-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 
+    /* ── Study / usage log panel ── */
+    .study-overlay {
+      position: fixed; inset: 0; z-index: 5000;
+      background: rgba(1,33,105,0.45);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .study-card {
+      background: #fff; border-radius: 12px; width: 440px; max-width: calc(100vw - 40px);
+      padding: 22px 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      font-size: 13px; line-height: 1.5; color: #1a1a2e;
+    }
+    .study-card h2 { margin: 0 0 8px; font-size: 16px; color: #012169; }
+    .study-card ul { margin: 6px 0 12px; padding-left: 18px; }
+    .study-card label { display: block; font-weight: 600; margin: 12px 0 4px; }
+    .study-card input[type="text"] {
+      width: 100%; padding: 8px 10px; font-size: 13px;
+      border: 1.5px solid #c9d3e6; border-radius: 7px;
+    }
+    .study-card .study-note { color: #5b6b8c; font-size: 12px; margin-top: 6px; min-height: 18px; }
+    .study-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .study-actions button {
+      flex: 1; padding: 9px 10px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer;
+      border: 1.5px solid #c9d3e6; background: #fff; color: #012169;
+    }
+    .study-actions button.primary { background: #012169; border-color: #012169; color: #fff; }
+
     /* ── Gold accent bar ── */
     .gold-bar {
       height: 3px;
@@ -816,6 +842,10 @@
     </div>
 
     <div class="med-badge">
+      <button class="folder-btn" id="study-btn" title="Lab study: what the app records about your usage, your participant code, and exporting your log">
+        <iconify-icon icon="mdi:clipboard-text-clock-outline"></iconify-icon>
+        Study
+      </button>
       <button class="folder-btn" id="open-folder-btn" title="Open Research Files folder in Finder">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h3.586a1 1 0 0 1 .707.293L7.5 3.5H13A1.5 1.5 0 0 1 14.5 5v7A1.5 1.5 0 0 1 13 13.5H2.5A1.5 1.5 0 0 1 1 12V3.5z"/>
@@ -825,6 +855,27 @@
     </div>
   </div>
   <div class="gold-bar"></div>
+
+  <!-- ── Study / usage log panel ── -->
+  <div class="study-overlay" id="study-overlay" style="display:none;">
+    <div class="study-card">
+      <h2>Lab study: usage log</h2>
+      <div>This app keeps a log of how it is used, for the lab's study of the dashboard. It records <b>what kind of action</b> you took and <b>when</b>:</div>
+      <ul>
+        <li>opening the app, loading patients (how many, not who)</li>
+        <li>starting a call, playing or stopping the voicemail message, muting, hanging up</li>
+        <li>opening a follow-up email, switching scripts or panels</li>
+      </ul>
+      <div>It <b>never</b> records patient names, phone numbers, email addresses, or anything said on a call. The log stays on this computer until you export it.</div>
+      <label for="study-code">Your participant code</label>
+      <input type="text" id="study-code" maxlength="20" placeholder="e.g. P07" autocomplete="off" spellcheck="false">
+      <div class="study-note" id="study-note"></div>
+      <div class="study-actions">
+        <button id="study-export">Export usage log…</button>
+        <button class="primary" id="study-save">Save &amp; close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ── Dashboard ── -->
   <div class="dashboard">
@@ -1051,6 +1102,36 @@
     let pdfFiles     = [];
     const pdfHistory = []; // stack of file indexes
 
+    // ── Usage log (lab study) ──────────────────────────────────────
+    // Event names only — never pass patient names, numbers, or emails here.
+    const track = (event, detail) => { try { window.api.logUsage(event, detail); } catch (e) {} };
+
+    const studyOverlay = document.getElementById('study-overlay');
+    const studyCodeEl  = document.getElementById('study-code');
+    const studyNoteEl  = document.getElementById('study-note');
+
+    async function openStudyPanel() {
+      const info = await window.api.getUsageInfo();
+      studyCodeEl.value = info.code || '';
+      studyNoteEl.textContent = `${info.events} action${info.events === 1 ? '' : 's'} recorded so far.`;
+      studyOverlay.style.display = 'flex';
+      studyCodeEl.focus();
+    }
+    document.getElementById('study-btn').addEventListener('click', openStudyPanel);
+    document.getElementById('study-save').addEventListener('click', async () => {
+      const info = await window.api.getUsageInfo();
+      if (studyCodeEl.value.trim() !== (info.code || '')) await window.api.setUsageCode(studyCodeEl.value.trim());
+      studyOverlay.style.display = 'none';
+    });
+    document.getElementById('study-export').addEventListener('click', async () => {
+      await window.api.setUsageCode(studyCodeEl.value.trim());
+      const result = await window.api.exportUsageLog();
+      if (result && result.error) studyNoteEl.textContent = result.error;
+      else if (result && result.path) studyNoteEl.textContent = `Saved to ${result.path}`;
+    });
+    // First launch: ask for the participant code once.
+    window.api.getUsageInfo().then(info => { if (!info.code) openStudyPanel(); });
+
     async function loadPDFTabs() {
       pdfFiles = await window.api.getPDFFiles();
       if (!pdfFiles || !pdfFiles.length) {
@@ -1069,7 +1150,11 @@
       selectPDF(scriptIdx !== -1 ? scriptIdx : 0);
     }
 
-    pdfSelect.addEventListener('change', () => selectPDF(parseInt(pdfSelect.value, 10)));
+    pdfSelect.addEventListener('change', () => {
+      const idx = parseInt(pdfSelect.value, 10);
+      if (pdfFiles[idx]) track('script_changed', pdfFiles[idx].name);
+      selectPDF(idx);
+    });
 
     let pdfLoadToken = 0; // guards against a stale reveal firing for a since-superseded load
 
@@ -1413,6 +1498,7 @@
           callStatusMissStreak = 0;
           const isTimer = /^\d{1,2}:\d{2}$/.test(text);
           callStatusTextEl.textContent = isTimer ? `Connected · ${text}` : text;
+          if (isTimer && !callStatusDotEl.classList.contains('connected')) track('call_connected');
           callStatusDotEl.classList.toggle('connected', isTimer);
         } else {
           callStatusMissStreak++;
@@ -1530,6 +1616,7 @@
       voicemailDuration = await probeVoicemailDuration(voicemailDataUrl);
       updateVoicemailUI();
       installVoicemailMixer(); // push into the already-loaded Google Voice page right away
+      track('voicemail_uploaded');
     });
 
     async function stopVoicemailPlayback() {
@@ -1541,8 +1628,10 @@
       setMicMutedUI(false); // mirrors the guest page's auto-unmute on stop
     }
 
+    let playTrigger = 'button'; // or 'hotkey' — only used for the usage log
     voicemailPlayBtn.addEventListener('click', async () => {
-      if (voicemailIsPlaying) { await stopVoicemailPlayback(); return; }
+      const trigger = playTrigger; playTrigger = 'button';
+      if (voicemailIsPlaying) { track('voicemail_play_stopped', trigger); await stopVoicemailPlayback(); return; }
       if (!voicemailDataUrl) return;
       stopVoicemailPoll();
       let played = false;
@@ -1551,12 +1640,14 @@
       } catch (e) { played = false; }
 
       if (!played) {
+        track('voicemail_play_failed', trigger);
         voicemailStatusEl.textContent = 'Could not play — make sure the call is connected, then try again.';
         setTimeout(updateVoicemailUI, 3500);
         return;
       }
 
       voicemailIsPlaying = true;
+      track('voicemail_play_started', trigger);
       voicemailPlayBtn.classList.add('cc-btn-stop');
       setMicMutedUI(true); // the guest page just auto-muted the mic for us
       showVoicemailWarning(false);
@@ -1575,7 +1666,8 @@
           stopVoicemailPoll();
           updateVoicemailUI();
           setMicMutedUI(false); // mirrors the guest page's auto-unmute on 'ended'
-          if (finishedNaturally && autoHangupCheckbox.checked) hangUpCall();
+          if (finishedNaturally) track('voicemail_play_finished');
+          if (finishedNaturally && autoHangupCheckbox.checked) { track('auto_hangup'); hangUpCall(); }
           return;
         }
         const remaining = state.dur - state.cur;
@@ -1589,10 +1681,10 @@
     const PLAY_HOTKEY_LABEL = window.api.platform === 'darwin' ? '⌘⇧P' : 'Ctrl+Shift+P';
     voicemailPlayBtn.title += ` (${PLAY_HOTKEY_LABEL})`;
     window.api.onToggleVoicemailPlay(() => {
-      if (!voicemailPlayBtn.disabled) voicemailPlayBtn.click();
+      if (!voicemailPlayBtn.disabled) { playTrigger = 'hotkey'; voicemailPlayBtn.click(); }
     });
 
-    voicemailMuteBtn.addEventListener('click', () => setMicMuted(!micMuted));
+    voicemailMuteBtn.addEventListener('click', () => { track(micMuted ? 'mic_unmuted' : 'mic_muted'); setMicMuted(!micMuted); });
 
     async function hangUpCall() {
       if (voicemailIsPlaying) await stopVoicemailPlayback();
@@ -1610,7 +1702,7 @@
       return ended;
     }
 
-    voicemailHangupBtn.addEventListener('click', hangUpCall);
+    voicemailHangupBtn.addEventListener('click', () => { track('hangup_clicked'); hangUpCall(); });
 
     loadVoicemailMessage();
 
@@ -1717,6 +1809,7 @@
     const ONEDRIVE_HOME_URL = document.getElementById('onedrive-view').getAttribute('src');
     document.getElementById('refresh-onedrive').addEventListener('click', () => {
       const view = document.getElementById('onedrive-view');
+      track('onedrive_home');
       view.stop();
       view.loadURL(ONEDRIVE_HOME_URL).catch(() => {}); // rejects harmlessly if a redirect interrupts it
     });
@@ -1770,7 +1863,7 @@
             <span class="phone-num">${formatPhone(n.value)}</span>
             <span class="call-label">${numbers.length > 1 ? n.kind + ' · Tap to call' : 'Tap to call'}</span>
           `;
-          btn.addEventListener('click', () => dialNumber(n.value));
+          btn.addEventListener('click', () => { track('call_started', n.kind.toLowerCase()); dialNumber(n.value); });
           phoneList.appendChild(btn);
         });
       } else {
@@ -1804,10 +1897,10 @@
     }
 
     document.getElementById('nav-prev').addEventListener('click', () => {
-      if (currentPatientIdx > 0) showPatient(--currentPatientIdx);
+      if (currentPatientIdx > 0) { track('patient_changed'); showPatient(--currentPatientIdx); }
     });
     document.getElementById('nav-next').addEventListener('click', () => {
-      if (currentPatientIdx < currentPatients.length - 1) showPatient(++currentPatientIdx);
+      if (currentPatientIdx < currentPatients.length - 1) { track('patient_changed'); showPatient(++currentPatientIdx); }
     });
 
     // Google Voice back button (wired here so voiceView is defined)
@@ -1925,6 +2018,7 @@
     async function emailPatient(p) {
       const to = (p.email || '').trim();
       const result = await window.api.sendEmail({ to, name: p.name || '', sex: p.sex || '' });
+      track(result && result.error ? 'email_failed' : 'email_opened');
       if (result && result.error) {
         alert(`Could not open Mail: ${result.error}`);
       } else if (result && result.warning) {
@@ -1960,6 +2054,7 @@
       // Store patients and show first one
       currentPatients = patients;
       currentPatientIdx = 0;
+      track('patients_loaded', patients.length);
       showPatient(0);
 
       document.getElementById('patient-results').style.display = 'flex';
@@ -2011,6 +2106,7 @@
     let voicePanelHidden = true;
 
     function setVoicePanelHidden(hidden) {
+      track(hidden ? 'voice_panel_hidden' : 'voice_panel_shown');
       voicePanelHidden = hidden;
       voiceSubpanel.style.display = hidden ? 'none' : 'flex';
       resizeH.style.display = hidden ? 'none' : 'block';

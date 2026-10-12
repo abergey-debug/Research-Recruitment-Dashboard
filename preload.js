@@ -11,4 +11,8 @@ contextBridge.exposeInMainWorld('api', {
   onOpenInPanel:  (cb) => ipcRenderer.on('open-in-panel',  (e, url) => cb(url)),
   onToggleVoicemailPlay: (cb) => ipcRenderer.on('toggle-voicemail-play', () => cb()),
   platform: process.platform,
+  logUsage:       (event, detail) => ipcRenderer.invoke('usage-log', { event, detail }),
+  getUsageInfo:   () => ipcRenderer.invoke('usage-get-info'),
+  setUsageCode:   (code) => ipcRenderer.invoke('usage-set-code', code),
+  exportUsageLog: () => ipcRenderer.invoke('usage-export'),
 });

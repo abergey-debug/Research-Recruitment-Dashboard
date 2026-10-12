@@ -5,6 +5,7 @@ const os   = require('os');
 const { execFile } = require('child_process');
 const { pathToFileURL } = require('url');
 const { loadEmailTemplate, fillPlaceholders, toAsciiHtml, listAttachments } = require('./email-template');
+const { registerUsageLog } = require('./usage-log');
 
 const PDF_FOLDERS = [
   path.join(__dirname, 'Research Files', 'Call Files'),
@@ -253,6 +254,8 @@ end tell`;
       });
     });
   });
+
+  registerUsageLog(() => mainWin);
 
   ipcMain.handle('get-voicemail-message', () => readVoicemailMessage());
 

@@ -936,6 +936,7 @@
           <span class="site-name">OneDrive</span>
           <span class="sub">Connecting…</span>
         </div>
+        <!-- Keep src in sync with ONEDRIVE_HOME_URL in the script -->
         <webview id="onedrive-view"
           src="https://emory-my.sharepoint.com/"
           partition="persist:recruitment"
@@ -1222,13 +1223,13 @@
       if (!view) return;
       view.addEventListener('did-finish-load', () => { loading.style.display = 'none'; });
       view.addEventListener('did-fail-load', (e) => {
-        if (e.errorCode === -3) return;
+        // Sub-frame failures (Excel Online loads many iframes) aren't the page failing
+        if (e.errorCode === -3 || e.isMainFrame === false) return;
         loading.querySelector('.sub').textContent = 'Check your connection.';
         const ring = loading.querySelector('.spinner-ring');
         if (ring) ring.style.display = 'none';
       });
     }
-    setupWebviewLoading('onedrive-view', 'onedrive-loading');
     setupWebviewLoading('voice-view',    'voice-loading');
 
     // ── Live Call Controls (voicemail drop, mic mute, hang up) ──────
@@ -1706,28 +1707,76 @@
 
     loadVoicemailMessage();
 
-    // ── OneDrive: open Excel/new-window links inside webview ───────
-    const onedriveView = document.getElementById('onedrive-view');
-    const onedriveBack = document.getElementById('onedrive-back');
+    // ── OneDrive panel ─────────────────────────────────────────────
+    // Fixed home address: the webview's own src attribute changes as it
+    // navigates (e.g. to a one-time Microsoft sign-in link), so it can't be
+    // trusted as "home".
+    const ONEDRIVE_HOME_URL = 'https://emory-my.sharepoint.com/';
+    const onedriveBack    = document.getElementById('onedrive-back');
+    const onedriveLoading = document.getElementById('onedrive-loading');
 
-    onedriveView.addEventListener('new-window', (e) => {
-      // Google Voice links from OneDrive → open in the Voice panel
-      if (e.url.includes('voice.google.com') || e.url.startsWith('tel:') || e.url.startsWith('sms:')) {
-        document.getElementById('voice-view').loadURL(
-          e.url.startsWith('tel:') || e.url.startsWith('sms:')
-            ? 'https://voice.google.com'
-            : e.url
-        );
-      } else {
-        // Everything else (Excel, SharePoint, etc.) opens inside this panel
-        onedriveView.loadURL(e.url);
+    function showOneDriveLoading(message, spinning) {
+      onedriveLoading.querySelector('.sub').textContent = message;
+      const ring = onedriveLoading.querySelector('.spinner-ring');
+      if (ring) ring.style.display = spinning ? '' : 'none';
+      onedriveLoading.style.display = 'flex';
+    }
+
+    // Attached to every OneDrive webview, including fresh ones made by the
+    // refresh button.
+    function wireOneDriveView(view) {
+      view.addEventListener('did-finish-load', () => { onedriveLoading.style.display = 'none'; });
+      view.addEventListener('did-fail-load', (e) => {
+        if (e.errorCode === -3 || e.isMainFrame === false) return;
+        showOneDriveLoading('Could not load OneDrive. Check your connection, then click refresh.', false);
+      });
+      view.addEventListener('render-process-gone', () => {
+        showOneDriveLoading('OneDrive stopped working. Click refresh to restart it.', false);
+      });
+      view.addEventListener('new-window', (e) => {
+        // Google Voice links from OneDrive → open in the Voice panel
+        if (e.url.includes('voice.google.com') || e.url.startsWith('tel:') || e.url.startsWith('sms:')) {
+          document.getElementById('voice-view').loadURL(
+            e.url.startsWith('tel:') || e.url.startsWith('sms:')
+              ? 'https://voice.google.com'
+              : e.url
+          );
+        } else {
+          // Everything else (Excel, SharePoint, etc.) opens inside this panel
+          view.loadURL(e.url);
+        }
+      });
+      view.addEventListener('did-navigate', () => {
+        onedriveBack.style.display = view.canGoBack() ? 'flex' : 'none';
+      });
+      // Keep the zoom the user picked
+      view.addEventListener('dom-ready', () => {
+        const pct = parseInt(document.getElementById('zoom-od-pct').textContent, 10);
+        if (pct && pct !== 100) view.setZoomFactor(pct / 100);
+      });
+    }
+    wireOneDriveView(document.getElementById('onedrive-view'));
+
+    // Failsafe: throws the OneDrive panel away and builds a fresh one at the
+    // home page. A reload (or loading a URL into the same panel) can't fix a
+    // panel whose page has crashed or is stuck mid sign-in; a new one can.
+    // Sign-in is kept - it lives in the shared "persist:recruitment" session.
+    function rebuildOneDriveView() {
+      const old = document.getElementById('onedrive-view');
+      const fresh = document.createElement('webview');
+      for (const attr of ['id', 'partition', 'allowpopups', 'useragent']) {
+        if (old.hasAttribute(attr)) fresh.setAttribute(attr, old.getAttribute(attr));
       }
-    });
-    onedriveView.addEventListener('did-navigate', () => {
-      onedriveBack.style.display = onedriveView.canGoBack() ? 'flex' : 'none';
-    });
+      fresh.setAttribute('src', ONEDRIVE_HOME_URL);
+      wireOneDriveView(fresh);
+      onedriveBack.style.display = 'none';
+      showOneDriveLoading('Connecting…', true);
+      old.replaceWith(fresh);
+    }
+
     onedriveBack.addEventListener('click', () => {
-      if (onedriveView.canGoBack()) onedriveView.goBack();
+      const view = document.getElementById('onedrive-view');
+      if (view.canGoBack()) view.goBack();
     });
 
     // ── Resize handles ─────────────────────────────────────────────
@@ -1803,15 +1852,9 @@
       const idx = parseInt(pdfSelect.value, 10);
       if (!Number.isNaN(idx)) selectPDF(idx, true);
     });
-    // Failsafe: always goes back to the OneDrive home page rather than
-    // reloading the current page — a plain reload just re-broke the panel
-    // when it was stuck somewhere (e.g. after clicking Home inside Excel).
-    const ONEDRIVE_HOME_URL = document.getElementById('onedrive-view').getAttribute('src');
     document.getElementById('refresh-onedrive').addEventListener('click', () => {
-      const view = document.getElementById('onedrive-view');
       track('onedrive_home');
-      view.stop();
-      view.loadURL(ONEDRIVE_HOME_URL).catch(() => {}); // rejects harmlessly if a redirect interrupts it
+      rebuildOneDriveView();
     });
     document.getElementById('refresh-voice').addEventListener('click', () => {
       document.getElementById('voice-view').reload();

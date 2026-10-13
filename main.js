@@ -5,7 +5,7 @@ const os   = require('os');
 const { execFile } = require('child_process');
 const { pathToFileURL } = require('url');
 const { loadEmailTemplate, fillPlaceholders, toAsciiHtml, listAttachments } = require('./email-template');
-const { registerUsageLog } = require('./usage-log');
+const { registerUsageLog, trackWindow } = require('./usage-log');
 
 const PDF_FOLDERS = [
   path.join(__dirname, 'Research Files', 'Call Files'),
@@ -126,6 +126,7 @@ function createWindow() {
   });
 
   mainWin.loadFile('index.html');
+  trackWindow(mainWin);
   attachPlayHotkey(mainWin.webContents);
 
   mainWin.webContents.on('did-attach-webview', (event, wc) => {

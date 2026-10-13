@@ -24,7 +24,9 @@ const CALL_END = (d) => (/^(hangup_button|auto_hangup|line_closed|new_call)( \d{
 const SCRIPT  = (d) => String(d ?? '').replace(/[^A-Za-z0-9 ._-]/g, '_').slice(0, 60);
 
 const EVENTS = {
-  app_opened: NONE, participant_code_set: NONE, log_exported: NONE,
+  app_opened: NONE, app_closed: NONE, participant_code_set: NONE, log_exported: NONE,
+  // The dashboard window lost / regained focus (switching to another app)
+  app_left: NONE, app_returned: NONE,
   patients_loaded: COUNT, patient_changed: NONE,
   call_started: ONE_OF('cell', 'home'), call_connected: NONE, call_ended: CALL_END, hangup_clicked: NONE, auto_hangup: NONE,
   voicemail_uploaded: NONE, voicemail_play_started: TRIGGER, voicemail_play_finished: NONE,
@@ -84,8 +86,16 @@ function registerUsageLog(getWindow) {
     logEvent('log_exported');
     return { path: result.filePath };
   });
-
-  logEvent('app_opened');
 }
 
-module.exports = { registerUsageLog };
+// Session start/end and switching away to other apps, per dashboard window.
+// A crash or force-quit leaves no app_closed; the next app_opened marks it.
+function trackWindow(win) {
+  logEvent('app_opened');
+  let away = false;
+  win.on('blur',  () => { if (!away) { away = true;  logEvent('app_left'); } });
+  win.on('focus', () => { if (away)  { away = false; logEvent('app_returned'); } });
+  win.on('closed', () => logEvent('app_closed'));
+}
+
+module.exports = { registerUsageLog, trackWindow };

@@ -18,13 +18,15 @@ const NONE    = () => '';
 const COUNT   = (d) => (/^\d{1,4}$/.test(String(d)) ? String(d) : '');
 const ONE_OF  = (...allowed) => (d) => (allowed.includes(d) ? d : '');
 const TRIGGER = ONE_OF('button', 'hotkey');
+// How a call ended, plus seconds connected when it did connect: "auto_hangup 68"
+const CALL_END = (d) => (/^(hangup_button|auto_hangup|line_closed|new_call)( \d{1,5})?$/.test(String(d)) ? String(d) : '');
 // A script's file name from Research Files/Call Files (not patient data)
 const SCRIPT  = (d) => String(d ?? '').replace(/[^A-Za-z0-9 ._-]/g, '_').slice(0, 60);
 
 const EVENTS = {
   app_opened: NONE, participant_code_set: NONE, log_exported: NONE,
   patients_loaded: COUNT, patient_changed: NONE,
-  call_started: ONE_OF('cell', 'home'), call_connected: NONE, hangup_clicked: NONE, auto_hangup: NONE,
+  call_started: ONE_OF('cell', 'home'), call_connected: NONE, call_ended: CALL_END, hangup_clicked: NONE, auto_hangup: NONE,
   voicemail_uploaded: NONE, voicemail_play_started: TRIGGER, voicemail_play_finished: NONE,
   voicemail_play_stopped: TRIGGER, voicemail_play_failed: TRIGGER,
   mic_muted: NONE, mic_unmuted: NONE,
@@ -61,8 +63,11 @@ function registerUsageLog(getWindow) {
 
   ipcMain.handle('usage-set-code', (e, code) => {
     const cleaned = cleanCode(code);
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ ...readSettings(), code: cleaned }), 'utf8');
-    logEvent('participant_code_set');
+    const previous = cleanCode(readSettings().code);
+    if (cleaned !== previous) {
+      fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ ...readSettings(), code: cleaned }), 'utf8');
+      logEvent('participant_code_set'); // only when it actually changes
+    }
     return { code: cleaned, events: countEvents() };
   });
 

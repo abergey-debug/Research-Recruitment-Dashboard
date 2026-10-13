@@ -1478,13 +1478,27 @@
     let callStatusMissStreak = 0;
     const CALL_STATUS_MAX_MISSES = 6; // ~6s of nothing found = treat the call as over
 
-    function stopCallStatusPoll() {
+    // For the usage log: is a dialed call still in progress, and how long has
+    // it been connected (read off Google Voice's own call timer).
+    let callActive = false;
+    let callTalkSeconds = null; // null = never connected
+
+    // reason: 'hangup_button' | 'auto_hangup' | 'new_call' (dialed again
+    // without hanging up) | 'line_closed' (the call disappeared on its own -
+    // the other side hung up, or it was ended inside the Google Voice panel)
+    function stopCallStatusPoll(reason = 'line_closed') {
       if (callStatusPollTimer) { clearInterval(callStatusPollTimer); callStatusPollTimer = null; }
       callStatusRowEl.style.display = 'none';
+      if (callActive) {
+        callActive = false;
+        track('call_ended', callTalkSeconds != null ? `${reason} ${callTalkSeconds}` : reason);
+      }
     }
 
     function startCallStatusPoll() {
-      stopCallStatusPoll();
+      stopCallStatusPoll('new_call');
+      callActive = true;
+      callTalkSeconds = null;
       callStatusMissStreak = 0;
       callStatusRowEl.style.display = 'flex';
       callStatusTextEl.textContent = 'Calling…';
@@ -1500,10 +1514,11 @@
           const isTimer = /^\d{1,2}:\d{2}$/.test(text);
           callStatusTextEl.textContent = isTimer ? `Connected · ${text}` : text;
           if (isTimer && !callStatusDotEl.classList.contains('connected')) track('call_connected');
+          if (isTimer) { const [m, sec] = text.split(':').map(Number); callTalkSeconds = m * 60 + sec; }
           callStatusDotEl.classList.toggle('connected', isTimer);
         } else {
           callStatusMissStreak++;
-          if (callStatusMissStreak >= CALL_STATUS_MAX_MISSES) stopCallStatusPoll();
+          if (callStatusMissStreak >= CALL_STATUS_MAX_MISSES) stopCallStatusPoll('line_closed');
         }
       }, 1000);
     }
@@ -1668,7 +1683,7 @@
           updateVoicemailUI();
           setMicMutedUI(false); // mirrors the guest page's auto-unmute on 'ended'
           if (finishedNaturally) track('voicemail_play_finished');
-          if (finishedNaturally && autoHangupCheckbox.checked) { track('auto_hangup'); hangUpCall(); }
+          if (finishedNaturally && autoHangupCheckbox.checked) { track('auto_hangup'); hangUpCall('auto_hangup'); }
           return;
         }
         const remaining = state.dur - state.cur;
@@ -1687,7 +1702,7 @@
 
     voicemailMuteBtn.addEventListener('click', () => { track(micMuted ? 'mic_unmuted' : 'mic_muted'); setMicMuted(!micMuted); });
 
-    async function hangUpCall() {
+    async function hangUpCall(reason = 'hangup_button') {
       if (voicemailIsPlaying) await stopVoicemailPlayback();
 
       let ended = false;
@@ -1699,7 +1714,7 @@
         voicemailStatusEl.textContent = "Couldn't find a hang-up button — end the call in the Google Voice panel.";
         setTimeout(() => { voicemailStatusEl.textContent = prevText; }, 3500);
       }
-      stopCallStatusPoll();
+      stopCallStatusPoll(reason);
       return ended;
     }
 
